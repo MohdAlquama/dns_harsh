@@ -44,7 +44,13 @@
     </div>
 
 
-    <form action="#" method="POST" enctype="multipart/form-data" class="space-y-6">
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <form action="/current-affairs" method="POST" enctype="multipart/form-data" class="space-y-6">
 
         <!-- ===================================================== -->
         <!-- 1. BASIC DETAILS -->
@@ -65,6 +71,8 @@
 
                     <input
                         type="text"
+                        name="course_name"
+                        required
                         class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none"
                     >
                 </div>
@@ -75,6 +83,7 @@
                     </label>
 
                     <textarea
+                        name="short_description"
                         rows="2"
                         class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none resize-y"
                     ></textarea>
@@ -86,6 +95,7 @@
                     </label>
 
                     <textarea
+                        name="long_description"
                         rows="2"
                         class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none resize-y"
                     ></textarea>
@@ -104,7 +114,7 @@
                             </span>
                         </p>
 
-                        <input type="file" class="hidden">
+                        <input type="file" name="default_image" accept="image/jpeg,image/png,image/webp" class="hidden">
                     </label>
                 </div>
 
@@ -132,6 +142,9 @@
 
                     <input
                         type="number"
+                        name="base_price"
+                        min="0"
+                        step="0.01"
                         placeholder="0.00"
                         class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none"
                     >
@@ -152,6 +165,7 @@
                             <input
                                 type="checkbox"
                                 id="gst_toggle"
+                                name="gst_enabled"
                                 class="sr-only peer"
                                 onchange="togglePricingField('gst_toggle','gst_field')"
                             >
@@ -173,6 +187,10 @@
                     <input
                         id="gst_field"
                         type="number"
+                        name="gst_percent"
+                        min="0"
+                        max="100"
+                        step="0.01"
                         placeholder="18"
                         disabled
                         class="w-full rounded border border-gray-300 p-2 text-sm bg-gray-100 focus:border-purple-500 focus:outline-none"
@@ -195,6 +213,7 @@
                             <input
                                 type="checkbox"
                                 id="platform_toggle"
+                                name="platform_charge_enabled"
                                 class="sr-only peer"
                                 onchange="togglePricingField('platform_toggle','platform_field')"
                             >
@@ -216,6 +235,9 @@
                     <input
                         id="platform_field"
                         type="number"
+                        name="platform_charge"
+                        min="0"
+                        step="0.01"
                         placeholder="0.00"
                         disabled
                         class="w-full rounded border border-gray-300 p-2 text-sm bg-gray-100 focus:border-purple-500 focus:outline-none"
@@ -257,6 +279,7 @@
 
                     <input
                         type="date"
+                        name="course_start_date"
                         class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none"
                     >
 
@@ -272,6 +295,7 @@
 
                     <input
                         type="date"
+                        name="course_end_date"
                         class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none"
                     >
 
@@ -301,6 +325,7 @@
                         <input
                             type="checkbox"
                             id="coming_soon_toggle"
+                            name="coming_soon"
                             class="sr-only peer"
                             onchange="toggleGKOption('coming')"
                         >
@@ -338,6 +363,7 @@
                         <input
                             type="checkbox"
                             id="main_ads_toggle"
+                            name="ads_enabled"
                             class="sr-only peer"
                             onchange="toggleGKOption('ads')"
                         >
@@ -384,6 +410,7 @@
 
                     <input
                         type="date"
+                        name="ad_start_date"
                         class="w-full rounded border border-gray-300 p-2 text-sm"
                     >
                 </div>
@@ -396,6 +423,7 @@
 
                     <input
                         type="date"
+                        name="ad_end_date"
                         class="w-full rounded border border-gray-300 p-2 text-sm"
                     >
                 </div>
@@ -409,6 +437,7 @@
 
                     <input
                         type="file"
+                        name="ad_image"
                         accept="image/*"
                         class="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 border border-gray-300 rounded cursor-pointer"
                     >
@@ -468,6 +497,7 @@
 
                     <input
                         type="url"
+                        name="image_url"
                         placeholder="https://"
                         class="w-full rounded border border-gray-300 p-2 text-sm"
                     >
@@ -484,6 +514,7 @@
 
                     <input
                         type="url"
+                        name="button_url"
                         placeholder="https://"
                         class="w-full rounded border border-gray-300 p-2 text-sm"
                     >
@@ -529,6 +560,7 @@
                         <input
                             type="checkbox"
                             id="notification_toggle"
+                            name="notification_enabled"
                             class="sr-only peer"
                             onchange="toggleNotificationFields()"
                         >
@@ -562,6 +594,7 @@
 
                     <input
                         type="text"
+                        name="notification_title"
                         class="w-full rounded border border-gray-300 p-2 text-sm"
                     >
                 </div>
@@ -573,6 +606,7 @@
                     </label>
 
                     <textarea
+                        name="notification_description"
                         rows="1"
                         class="w-full rounded border border-gray-300 p-2 text-sm resize-y"
                     ></textarea>
@@ -586,6 +620,7 @@
 
                     <input
                         type="date"
+                        name="notification_start_date"
                         class="w-full rounded border border-gray-300 p-2 text-sm"
                     >
                 </div>
@@ -598,6 +633,7 @@
 
                     <input
                         type="date"
+                        name="notification_end_date"
                         class="w-full rounded border border-gray-300 p-2 text-sm"
                     >
                 </div>
@@ -784,6 +820,7 @@
                     <input
                         type="checkbox"
                         id="offer_toggle"
+                        name="offer_enabled"
                         class="sr-only peer"
                         onchange="toggleOfferFields()"
                     >
@@ -817,6 +854,7 @@
 
                     <input
                         type="text"
+                        name="offer_name"
                         placeholder="Enter Offer Name"
                         class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-purple-500 focus:outline-none"
                     >
@@ -826,6 +864,8 @@
 
                 <!-- Choose Discount -->
                 <div>
+
+                    <input type="hidden" id="offer_type" name="offer_type">
 
                     <label class="block text-sm font-medium text-gray-700 mb-3">
                         Discount Type
@@ -924,6 +964,9 @@
                         <input
                             type="number"
                             id="offer_rate"
+                            name="offer_rate"
+                            min="0"
+                            step="0.01"
                             placeholder="Enter rate"
                             class="w-full rounded-lg border border-gray-300 p-3 pl-9 text-sm focus:border-purple-500 focus:outline-none"
                         >
@@ -953,7 +996,14 @@
         </section>
 
 
-        <div class="pb-10"></div>
+        <div class="flex justify-end pb-10">
+            <button
+                type="submit"
+                class="bg-purple-700 text-white font-semibold px-7 py-3 rounded-lg hover:bg-purple-800 transition"
+            >
+                Save Current Affairs Course
+            </button>
+        </div>
 
     </form>
 
@@ -1194,6 +1244,9 @@
     ========================================================= */
 
     function selectOfferType(type) {
+
+        document.getElementById("offer_type").value =
+            type === "percent" ? "PERCENT" : "FIXED";
 
         const percentOption =
             document.getElementById("percent_option");

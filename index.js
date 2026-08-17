@@ -12,6 +12,7 @@ import authRoutes from "./routes/authRoutes.js";
 import createAuthConfigTable from "./models/authConfigTable.js";
 import authConfigRoutes from "./routes/authConfigRoutes.js";
 import { showAuthSettings } from "./controllers/authConfigController.js";
+import createCurrentAffairsTables from "./models/currentAffairsTables.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -48,6 +49,7 @@ await createAuthTables();
 await createOtpTable();
 await createRefreshTokenTable();
 await createAuthConfigTable();
+await createCurrentAffairsTables();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

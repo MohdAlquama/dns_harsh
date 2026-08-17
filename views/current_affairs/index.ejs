@@ -1,14 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    hello
-    <form method="post" action="/current-affairs-fresh-form">
-        <button>New Current Affairs form</button>
-    </form>
-</body>
-</html>
+<div class="max-w-7xl mx-auto space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <p class="text-sm font-medium text-violet-600">Course management</p>
+      <h1 class="text-2xl font-bold text-slate-900 mt-1">Current Affairs</h1>
+      <p class="text-sm text-slate-500 mt-1">Manage course settings stored in the relational database.</p>
+    </div>
+    <a href="/current-affairs/new"
+       class="inline-flex items-center justify-center gap-2 bg-violet-600 text-white font-semibold px-5 py-3 rounded-2xl hover:bg-violet-700 transition shadow-md shadow-violet-200">
+      <i data-lucide="plus-circle" class="w-4 h-4"></i>
+      New Current Affairs Course
+    </a>
+  </div>
+
+  <% if (typeof saved !== 'undefined' && saved) { %>
+    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+      Current Affairs course and its related settings were saved successfully.
+    </div>
+  <% } %>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <section class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+    <% if (!courses || courses.length === 0) { %>
+      <div class="px-6 py-16 text-center">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-violet-100 flex items-center justify-center">
+          <i data-lucide="newspaper" class="w-7 h-7 text-violet-600"></i>
+        </div>
+        <h2 class="font-semibold text-slate-800 mt-4">No Current Affairs courses yet</h2>
+        <p class="text-sm text-slate-500 mt-1">Create the first course to add pricing, ads, notifications, PDFs and offers.</p>
+      </div>
+    <% } else { %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-left text-slate-500">
+            <tr>
+              <th class="px-5 py-4 font-semibold">Course</th>
+              <th class="px-5 py-4 font-semibold">Price</th>
+              <th class="px-5 py-4 font-semibold">GST</th>
+              <th class="px-5 py-4 font-semibold">Schedule</th>
+              <th class="px-5 py-4 font-semibold">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% courses.forEach((course) => { %>
+              <tr class="hover:bg-slate-50/70 transition">
+                <td class="px-5 py-4">
+                  <p class="font-semibold text-slate-800"><%= course.course_name %></p>
+                  <p class="text-xs text-slate-400 mt-1">ID: <%= course.id %></p>
+                </td>
+                <td class="px-5 py-4 font-medium text-slate-700">
+                  ₹<%= Number(course.base_price).toLocaleString('en-IN', { minimumFractionDigits: 2 }) %>
+                </td>
+                <td class="px-5 py-4 text-slate-600">
+                  <%= course.gst_enabled ? `${course.gst_percent || 0}%` : 'Disabled' %>
+                </td>
+                <td class="px-5 py-4 text-xs text-slate-500 whitespace-nowrap">
+                  <%= course.start_date ? new Date(course.start_date).toLocaleDateString('en-IN') : 'No start date' %>
+                  —
+                  <%= course.end_date ? new Date(course.end_date).toLocaleDateString('en-IN') : 'No end date' %>
+                </td>
+                <td class="px-5 py-4">
+                  <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold <%= course.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-700' : course.status === 'COMING_SOON' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600' %>">
+                    <%= course.status.replace('_', ' ') %>
+                  </span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+</div>
