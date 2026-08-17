@@ -43,6 +43,32 @@ const createUser = async (
     return result.insertId;
 };
 
+// Save registration details while keeping the account disabled until OTP verification.
+const createPendingUser = async (phoneNumber, name, passwordHash) => {
+    const [result] = await db.execute(
+        `INSERT INTO auth_users (phone_number, name, password_hash, status)
+         VALUES (?, ?, ?, 0)
+         ON DUPLICATE KEY UPDATE
+            name = IF(status = 0, VALUES(name), name),
+            password_hash = IF(status = 0, VALUES(password_hash), password_hash),
+            updated_at = IF(status = 0, CURRENT_TIMESTAMP, updated_at)`,
+        [phoneNumber, name, passwordHash]
+    );
+
+    return result.insertId;
+};
+
+const activateUser = async (userId) => {
+    const [result] = await db.execute(
+        `UPDATE auth_users
+         SET status = 1, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ? AND status = 0`,
+        [userId]
+    );
+
+    return result.affectedRows > 0;
+};
+
 
 // Find user by ID
 const findUserById = async (userId) => {
@@ -88,6 +114,8 @@ const updatePassword = async (
 export {
     findUserByPhone,
     createUser,
+    createPendingUser,
+    activateUser,
     findUserById,
     updatePassword
 };

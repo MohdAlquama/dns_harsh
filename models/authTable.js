@@ -20,6 +20,7 @@ const createAuthTables = async () => {
     } catch (error) {
         console.error("❌ Auth users table creation failed");
         console.error(error.message);
+        throw error;
     }
 };
 

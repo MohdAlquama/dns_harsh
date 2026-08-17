@@ -20,6 +20,18 @@ const getTwoFactorConfig = async () => {
     return rows[0] || null;
 };
 
+const getTwoFactorConfigStatus = async () => {
+    const [rows] = await db.execute(
+        `SELECT provider, status, updated_at
+         FROM auth_config
+         WHERE provider = ?
+         LIMIT 1`,
+        ["2FACTOR"]
+    );
+
+    return rows[0] || null;
+};
+
 
 // Save 2Factor API key
 const saveTwoFactorConfig = async (apiKey) => {
@@ -41,5 +53,6 @@ const saveTwoFactorConfig = async (apiKey) => {
 
 export {
     getTwoFactorConfig,
+    getTwoFactorConfigStatus,
     saveTwoFactorConfig
 };

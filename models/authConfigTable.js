@@ -25,6 +25,7 @@ const createAuthConfigTable = async () => {
     } catch (error) {
         console.error("❌ Auth config table creation failed");
         console.error(error.message);
+        throw error;
     }
 };
 

@@ -11,6 +11,7 @@ import createRefreshTokenTable from "./models/refreshTokenTable.js";
 import authRoutes from "./routes/authRoutes.js";
 import createAuthConfigTable from "./models/authConfigTable.js";
 import authConfigRoutes from "./routes/authConfigRoutes.js";
+import { showAuthSettings } from "./controllers/authConfigController.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,6 +37,7 @@ app.use('/dashboard', getDashboard);
 app.use("/", currentAffairsRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/auth-config", authConfigRoutes);
+app.get("/auth-settings", showAuthSettings);
 
 // Redirect root to dashboard
 app.get('/', (req, res) => {

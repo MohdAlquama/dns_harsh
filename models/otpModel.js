@@ -47,6 +47,7 @@ const findOtpByPhone = async (
          WHERE phone_number = ?
          AND purpose = ?
          AND verified_at IS NULL
+         AND consumed_at IS NULL
          ORDER BY id DESC
          LIMIT 1`,
         [
@@ -71,14 +72,55 @@ const incrementOtpAttempts = async (otpId) => {
 
 
 // Mark OTP verified
-const markOtpVerified = async (otpId) => {
+const markOtpVerified = async (
+    otpId,
+    actionTokenHash = null,
+    actionTokenExpiresAt = null
+) => {
 
     await db.execute(
         `UPDATE otp_verifications
-         SET verified_at = CURRENT_TIMESTAMP
+         SET verified_at = CURRENT_TIMESTAMP,
+             action_token_hash = ?,
+             action_token_expires_at = ?
          WHERE id = ?`,
+        [actionTokenHash, actionTokenExpiresAt, otpId]
+    );
+};
+
+const invalidateOtps = async (phoneNumber, purpose) => {
+    await db.execute(
+        `UPDATE otp_verifications
+         SET consumed_at = CURRENT_TIMESTAMP
+         WHERE phone_number = ? AND purpose = ? AND consumed_at IS NULL`,
+        [phoneNumber, purpose]
+    );
+};
+
+const consumeOtp = async (otpId) => {
+    await db.execute(
+        `UPDATE otp_verifications
+         SET consumed_at = CURRENT_TIMESTAMP
+         WHERE id = ? AND consumed_at IS NULL`,
         [otpId]
     );
+};
+
+const findOtpByResetToken = async (phoneNumber, actionTokenHash) => {
+    const [rows] = await db.execute(
+        `SELECT id
+         FROM otp_verifications
+         WHERE phone_number = ?
+           AND purpose = 'FORGOT_PASSWORD'
+           AND verified_at IS NOT NULL
+           AND consumed_at IS NULL
+           AND action_token_hash = ?
+           AND action_token_expires_at > CURRENT_TIMESTAMP
+         LIMIT 1`,
+        [phoneNumber, actionTokenHash]
+    );
+
+    return rows[0] || null;
 };
 
 const findVerifiedOtp = async (
@@ -115,5 +157,8 @@ export {
     findOtpByPhone,
     incrementOtpAttempts,
     markOtpVerified,
-    findVerifiedOtp
-};  
+    findVerifiedOtp,
+    invalidateOtps,
+    consumeOtp,
+    findOtpByResetToken
+};

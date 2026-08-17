@@ -1,736 +1,384 @@
-import { findUserByPhone , createUser,updatePassword} from "../models/authModel.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { createOtp, findOtpByPhone, markOtpVerified ,findVerifiedOtp} from "../models/otpModel.js";
-import { sendOtp ,  
-        verifyOtp
-} from "../services/twoFactorService.js";
+
+import {
+    activateUser,
+    createPendingUser,
+    findUserByPhone,
+    updatePassword
+} from "../models/authModel.js";
+import {
+    consumeOtp,
+    createOtp,
+    findOtpByPhone,
+    findOtpByResetToken,
+    incrementOtpAttempts,
+    invalidateOtps,
+    markOtpVerified
+} from "../models/otpModel.js";
+import {
+    findRefreshToken,
+    revokeAllRefreshTokensForUser,
+    revokeRefreshToken,
+    saveRefreshToken
+} from "../models/refreshTokenModel.js";
+import { sendOtp, verifyOtp } from "../services/twoFactorService.js";
 import {
     createAccessToken,
-    createRefreshToken, verifyRefreshToken
+    createRefreshToken,
+    verifyRefreshToken
 } from "../services/tokenService.js";
 
-import {
-    saveRefreshToken,
-    findRefreshToken,
-    revokeRefreshToken
-} from "../models/refreshTokenModel.js";
+const OTP_EXPIRY_MS = 5 * 60 * 1000;
+const RESET_TOKEN_EXPIRY_MS = 10 * 60 * 1000;
+const MAX_OTP_ATTEMPTS = 5;
 
+const normalizePhoneNumber = (value) =>
+    typeof value === "string" ? value.replace(/[\s()-]/g, "") : "";
 
+const isValidPhoneNumber = (value) => /^\+?[1-9]\d{9,14}$/.test(value);
+const isValidPassword = (value) => typeof value === "string" && value.length >= 8;
+const hashToken = (value) => crypto.createHash("sha256").update(value).digest("hex");
+
+const issueTokens = async (user, req) => {
+    const accessToken = createAccessToken(user.id);
+    const refreshToken = createRefreshToken(user.id);
+
+    await saveRefreshToken(
+        user.id,
+        hashToken(refreshToken),
+        req.headers["x-device-type"] || null,
+        req.headers["x-device-name"] || null,
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    );
+
+    return { accessToken, refreshToken, expiresIn: 900 };
+};
+
+// Optional first screen: only tells the client whether to show login or register.
 const startAuth = async (req, res) => {
     try {
+        const phoneNumber = normalizePhoneNumber(req.body.phoneNumber);
+        if (!isValidPhoneNumber(phoneNumber)) {
+            return res.status(400).json({ success: false, message: "Valid phone number is required" });
+        }
 
-        const { phoneNumber } = req.body;
+        const user = await findUserByPhone(phoneNumber);
+        return res.status(200).json({
+            success: true,
+            exists: Boolean(user?.status === 1),
+            next: user?.status === 1 ? "PASSWORD" : "REGISTER"
+        });
+    } catch (error) {
+        console.error("Start Auth Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+};
 
-        if (!phoneNumber) {
+// Registration step 1: save pending details and send the OTP.
+const register = async (req, res) => {
+    try {
+        const phoneNumber = normalizePhoneNumber(req.body.phoneNumber);
+        const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+        const { password, confirmPassword } = req.body;
+
+        if (!isValidPhoneNumber(phoneNumber) || !name || !password) {
             return res.status(400).json({
                 success: false,
-                message: "Phone number is required"
+                message: "Valid phone number, name and password are required"
+            });
+        }
+        if (confirmPassword !== undefined && password !== confirmPassword) {
+            return res.status(400).json({ success: false, message: "Passwords do not match" });
+        }
+        if (!isValidPassword(password)) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 8 characters"
             });
         }
 
-
-        // Check user
-        const user = await findUserByPhone(phoneNumber);
-
-
-        // Existing user
-        if (user) {
-
-            return res.status(200).json({
-                success: true,
-                exists: true,
-                next: "PASSWORD"
-            });
-
+        const existingUser = await findUserByPhone(phoneNumber);
+        if (existingUser?.status === 1) {
+            return res.status(409).json({ success: false, message: "User already exists" });
         }
 
+        const passwordHash = await bcrypt.hash(password, 12);
+        await createPendingUser(phoneNumber, name, passwordHash);
+        await invalidateOtps(phoneNumber, "REGISTER");
 
-        // New user
         const otpResponse = await sendOtp(phoneNumber);
-
-
-        // OTP session ID save
-        const expiresAt = new Date(
-            Date.now() + 5 * 60 * 1000
-        );
-
-
         await createOtp(
             phoneNumber,
             otpResponse.sessionId,
             "REGISTER",
-            expiresAt
+            new Date(Date.now() + OTP_EXPIRY_MS)
         );
 
-
-        return res.status(200).json({
+        return res.status(202).json({
             success: true,
-            exists: false,
-            next: "OTP"
+            message: "OTP sent successfully",
+            next: "VERIFY_OTP",
+            purpose: "REGISTER"
         });
-
-
     } catch (error) {
-
-        console.error("Start Auth Error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Server error"
-        });
+        console.error("Register Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
-
-const register = async (req, res) => {
-    try {
-
-        const {
-            phoneNumber,
-            name,
-            password,
-            confirmPassword
-        } = req.body;
-
-
-        if (
-            !phoneNumber ||
-            !name ||
-            !password ||
-            !confirmPassword
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required"
-            });
-        }
-
-
-        if (password !== confirmPassword) {
-            return res.status(400).json({
-                success: false,
-                message: "Passwords do not match"
-            });
-        }
-
-
-        // Check user already exists
-        const existingUser = await findUserByPhone(
-            phoneNumber
-        );
-
-
-        if (existingUser) {
-            return res.status(409).json({
-                success: false,
-                message: "User already exists"
-            });
-        }
-
-
-        // Check OTP verification
-        const verifiedOtp = await findVerifiedOtp(
-            phoneNumber,
-            "REGISTER"
-        );
-
-
-        if (!verifiedOtp) {
-            return res.status(403).json({
-                success: false,
-                message: "Please verify OTP first"
-            });
-        }
-
-
-        // Hash password
-        const passwordHash = await bcrypt.hash(
-            password,
-            12
-        );
-
-
-        // Create user
-        const userId = await createUser(
-            phoneNumber,
-            name,
-            passwordHash
-        );
-
-
-        return res.status(201).json({
-            success: true,
-            message: "Account created successfully",
-            userId
-        });
-
-
-    } catch (error) {
-
-        console.error(
-            "Register Error:",
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            message: "Server error"
-        });
-    }
-};
-
-
-
 
 const login = async (req, res) => {
     try {
-
-        const {
-            phoneNumber,
-            password
-        } = req.body;
-
-
-        if (!phoneNumber || !password) {
+        const phoneNumber = normalizePhoneNumber(req.body.phoneNumber);
+        const { password } = req.body;
+        if (!isValidPhoneNumber(phoneNumber) || !password) {
             return res.status(400).json({
                 success: false,
-                message: "Phone number and password are required"
+                message: "Valid phone number and password are required"
             });
         }
 
-
-        // Find user
-        const user = await findUserByPhone(
-            phoneNumber
-        );
-
-
-        if (!user) {
+        const user = await findUserByPhone(phoneNumber);
+        if (!user || user.status !== 1 || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid phone number or password"
             });
         }
 
-
-        // Check account status
-        if (user.status !== 1) {
-            return res.status(403).json({
-                success: false,
-                message: "Account is inactive"
-            });
-        }
-
-
-        // Check password
-        const passwordMatch = await bcrypt.compare(
-            password,
-            user.password_hash
-        );
-
-
-        if (!passwordMatch) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid phone number or password"
-            });
-        }
-
-
-        // Create access token
-        const accessToken = createAccessToken(
-            user.id
-        );
-
-
-        // Create refresh token
-        const refreshToken = createRefreshToken(
-            user.id
-        );
-
-
-        // Hash refresh token before saving
-        const tokenHash = crypto
-            .createHash("sha256")
-            .update(refreshToken)
-            .digest("hex");
-
-
-        // Refresh token expiry
-        const expiresAt = new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000
-        );
-
-
-        // Save refresh token
-        await saveRefreshToken(
-            user.id,
-            tokenHash,
-            req.headers["x-device-type"] || null,
-            req.headers["x-device-name"] || null,
-            expiresAt
-        );
-
-
+        const tokens = await issueTokens(user, req);
         return res.status(200).json({
             success: true,
             message: "Login successful",
-
-            accessToken,
-
-            refreshToken,
-
-            expiresIn: 900,
-
-            user: {
-                id: user.id,
-                name: user.name,
-                phoneNumber: user.phone_number
-            }
+            ...tokens,
+            user: { id: user.id, name: user.name, phoneNumber: user.phone_number }
         });
-
-
     } catch (error) {
-
-        console.error(
-            "Login Error:",
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            message: "Server error"
-        });
+        console.error("Login Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
-};  
+};
 
 const refreshToken = async (req, res) => {
     try {
-
         const { refreshToken: token } = req.body;
-
         if (!token) {
-            return res.status(400).json({
-                success: false,
-                message: "Refresh token is required"
-            });
+            return res.status(400).json({ success: false, message: "Refresh token is required" });
         }
 
-
-        // Verify JWT
         let decoded;
-
         try {
-
             decoded = verifyRefreshToken(token);
-
-        } catch (error) {
-
+        } catch {
             return res.status(401).json({
                 success: false,
                 message: "Invalid or expired refresh token"
             });
         }
 
-
-        // Find token in database
-        const tokenRecord = await findRefreshToken(token);
-
-        if (!tokenRecord) {
-            return res.status(401).json({
-                success: false,
-                message: "Refresh token not found or revoked"
-            });
-        }
-
-
-        // Check expiry
+        const tokenRecord = await findRefreshToken(hashToken(token));
         if (
-            new Date(tokenRecord.expires_at) < new Date()
+            !tokenRecord ||
+            tokenRecord.user_id !== decoded.userId ||
+            new Date(tokenRecord.expires_at) <= new Date()
         ) {
             return res.status(401).json({
                 success: false,
-                message: "Refresh token expired"
+                message: "Refresh token not found, revoked or expired"
             });
         }
 
-
-        // Create new access token
-        const accessToken = createAccessToken(
-            decoded.userId
-        );
-
-
         return res.status(200).json({
             success: true,
-            accessToken,
+            accessToken: createAccessToken(decoded.userId),
             expiresIn: 900
         });
-
-
     } catch (error) {
-
-        console.error(
-            "Refresh Token Error:",
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            message: "Server error"
-        });
+        console.error("Refresh Token Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
 const logout = async (req, res) => {
     try {
-
         const { refreshToken: token } = req.body;
-
         if (!token) {
-            return res.status(400).json({
-                success: false,
-                message: "Refresh token is required"
-            });
+            return res.status(400).json({ success: false, message: "Refresh token is required" });
         }
 
+        const tokenRecord = await findRefreshToken(hashToken(token));
+        if (tokenRecord) await revokeRefreshToken(tokenRecord.id);
 
-        // Find token in database
-        const tokenRecord = await findRefreshToken(token);
-
-
-        // Token already revoked/not found
-        if (!tokenRecord) {
-            return res.status(200).json({
-                success: true,
-                message: "Already logged out"
-            });
-        }
-
-
-        // Revoke token
-        await revokeRefreshToken(
-            tokenRecord.id
-        );
-
-
-        return res.status(200).json({
-            success: true,
-            message: "Logout successful"
-        });
-
-
+        return res.status(200).json({ success: true, message: "Logout successful" });
     } catch (error) {
-
-        console.error(
-            "Logout Error:",
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            message: "Server error"
-        });
+        console.error("Logout Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
-
+// Forgot-password step 1: send an OTP to an active account.
 const forgotPassword = async (req, res) => {
     try {
-
-        const { phoneNumber } = req.body;
-
-        if (!phoneNumber) {
-            return res.status(400).json({
-                success: false,
-                message: "Phone number is required"
-            });
+        const phoneNumber = normalizePhoneNumber(req.body.phoneNumber);
+        if (!isValidPhoneNumber(phoneNumber)) {
+            return res.status(400).json({ success: false, message: "Valid phone number is required" });
         }
 
-
-        // Check user
-        const user = await findUserByPhone(
-            phoneNumber
-        );
-
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+        const user = await findUserByPhone(phoneNumber);
+        if (!user || user.status !== 1) {
+            return res.status(404).json({ success: false, message: "User not found" });
         }
 
-
-        // Generate OTP
-        const otpResponse = await sendOtp(
-            phoneNumber
-        );
-
-
-        // OTP expiry - 5 minutes
-        const expiresAt = new Date(
-            Date.now() + 5 * 60 * 1000
-        );
-
-
-        // Save OTP
+        await invalidateOtps(phoneNumber, "FORGOT_PASSWORD");
+        const otpResponse = await sendOtp(phoneNumber);
         await createOtp(
             phoneNumber,
             otpResponse.sessionId,
             "FORGOT_PASSWORD",
-            expiresAt
+            new Date(Date.now() + OTP_EXPIRY_MS)
         );
-
 
         return res.status(200).json({
             success: true,
-            next: "OTP",
-            message: "OTP sent successfully"
+            message: "OTP sent successfully",
+            next: "VERIFY_OTP",
+            purpose: "FORGOT_PASSWORD"
         });
-
-
     } catch (error) {
-
-        console.error(
-            "Forgot Password Error:",
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            message: "Server error"
-        });
+        console.error("Forgot Password Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
+// Forgot-password step 3: use the short-lived token returned after OTP verification.
 const resetPassword = async (req, res) => {
     try {
+        const phoneNumber = normalizePhoneNumber(req.body.phoneNumber);
+        const { password, confirmPassword, resetToken } = req.body;
 
-        const {
-            phoneNumber,
-            password,
-            confirmPassword
-        } = req.body;
-
-
-        if (
-            !phoneNumber ||
-            !password ||
-            !confirmPassword
-        ) {
+        if (!isValidPhoneNumber(phoneNumber) || !password || !resetToken) {
             return res.status(400).json({
                 success: false,
-                message: "Phone number, password and confirm password are required"
+                message: "Phone number, new password and reset token are required"
             });
         }
-
-
-        if (password !== confirmPassword) {
+        if (confirmPassword !== undefined && password !== confirmPassword) {
+            return res.status(400).json({ success: false, message: "Passwords do not match" });
+        }
+        if (!isValidPassword(password)) {
             return res.status(400).json({
                 success: false,
-                message: "Passwords do not match"
+                message: "Password must be at least 8 characters"
             });
         }
 
-
-        // Check user
-        const user = await findUserByPhone(
-            phoneNumber
-        );
-
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+        const user = await findUserByPhone(phoneNumber);
+        const otpRecord = await findOtpByResetToken(phoneNumber, hashToken(resetToken));
+        if (!user || user.status !== 1 || !otpRecord) {
+            return res.status(403).json({ success: false, message: "Invalid or expired reset token" });
         }
 
-
-        // Check verified OTP
-        const verifiedOtp = await findVerifiedOtp(
-            phoneNumber,
-            "FORGOT_PASSWORD"
-        );
-
-
-        if (!verifiedOtp) {
-            return res.status(403).json({
-                success: false,
-                message: "Please verify OTP first"
-            });
-        }
-
-
-        // Hash new password
-        const passwordHash = await bcrypt.hash(
-            password,
-            12
-        );
-
-
-        // Update password
-        const updated = await updatePassword(
-            user.id,
-            passwordHash
-        );
-
-
-        if (!updated) {
-            return res.status(500).json({
-                success: false,
-                message: "Password update failed"
-            });
-        }
-
+        const passwordHash = await bcrypt.hash(password, 12);
+        await updatePassword(user.id, passwordHash);
+        await consumeOtp(otpRecord.id);
+        await revokeAllRefreshTokensForUser(user.id);
 
         return res.status(200).json({
             success: true,
             message: "Password reset successfully",
             next: "LOGIN"
         });
-
-
     } catch (error) {
-
-        console.error(
-            "Reset Password Error:",
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            message: "Server error"
-        });
+        console.error("Reset Password Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
-
 const verifyAuthOtp = async (req, res) => {
     try {
+        const phoneNumber = normalizePhoneNumber(req.body.phoneNumber);
+        const { otp, purpose } = req.body;
 
-        const {
-            phoneNumber,
-            otp,
-            purpose
-        } = req.body;
-
-
-        if (!phoneNumber || !otp || !purpose) {
+        if (!isValidPhoneNumber(phoneNumber) || !otp || !purpose) {
             return res.status(400).json({
                 success: false,
-                message: "Phone number, OTP and purpose are required"
+                message: "Valid phone number, OTP and purpose are required"
             });
         }
-
-
-        // Only allowed purposes
-        if (
-            purpose !== "REGISTER" &&
-            purpose !== "FORGOT_PASSWORD"
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid OTP purpose"
-            });
+        if (!["REGISTER", "FORGOT_PASSWORD"].includes(purpose)) {
+            return res.status(400).json({ success: false, message: "Invalid OTP purpose" });
         }
 
-
-        // Find latest OTP
-        const otpRecord = await findOtpByPhone(
-            phoneNumber,
-            purpose
-        );
-
-
+        const otpRecord = await findOtpByPhone(phoneNumber, purpose);
         if (!otpRecord) {
-            return res.status(400).json({
-                success: false,
-                message: "OTP session not found or already verified"
-            });
+            return res.status(400).json({ success: false, message: "OTP session not found" });
+        }
+        if (new Date(otpRecord.expires_at) <= new Date()) {
+            await consumeOtp(otpRecord.id);
+            return res.status(400).json({ success: false, message: "OTP expired" });
+        }
+        if (otpRecord.attempts >= MAX_OTP_ATTEMPTS) {
+            await consumeOtp(otpRecord.id);
+            return res.status(429).json({ success: false, message: "Too many invalid OTP attempts" });
         }
 
-
-        // Check expiry
-        if (
-            new Date(otpRecord.expires_at) < new Date()
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "OTP expired"
-            });
-        }
-
-
-        // Verify OTP through 2Factor
-        const result = await verifyOtp(
-            otpRecord.session_id,
-            otp
-        );
-
-
+        const result = await verifyOtp(otpRecord.session_id, String(otp));
         if (result.Status !== "Success") {
-
+            await incrementOtpAttempts(otpRecord.id);
             return res.status(400).json({
                 success: false,
                 message: result.Details || "Invalid OTP"
             });
-
         }
 
-
-        // Mark OTP verified
-        await markOtpVerified(
-            otpRecord.id
-        );
-
-
-        // Registration OTP
         if (purpose === "REGISTER") {
+            const user = await findUserByPhone(phoneNumber);
+            if (!user || user.status === 1) {
+                await consumeOtp(otpRecord.id);
+                return res.status(409).json({ success: false, message: "Registration is no longer pending" });
+            }
 
-            return res.status(200).json({
+            await activateUser(user.id);
+            await markOtpVerified(otpRecord.id);
+            await consumeOtp(otpRecord.id);
+            const tokens = await issueTokens({ ...user, status: 1 }, req);
+
+            return res.status(201).json({
                 success: true,
-                next: "DETAILS"
+                message: "Phone verified and account created",
+                next: "HOME",
+                ...tokens,
+                user: { id: user.id, name: user.name, phoneNumber: user.phone_number }
             });
-
         }
 
-
-        // Forgot password OTP
-        if (purpose === "FORGOT_PASSWORD") {
-
-            return res.status(200).json({
-                success: true,
-                next: "NEW_PASSWORD"
-            });
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            "Verify OTP Error:",
-            error
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        await markOtpVerified(
+            otpRecord.id,
+            hashToken(resetToken),
+            new Date(Date.now() + RESET_TOKEN_EXPIRY_MS)
         );
 
-        return res.status(500).json({
-            success: false,
-            message: "Server error"
+        return res.status(200).json({
+            success: true,
+            message: "OTP verified",
+            next: "NEW_PASSWORD",
+            resetToken,
+            resetTokenExpiresIn: RESET_TOKEN_EXPIRY_MS / 1000
         });
+    } catch (error) {
+        console.error("Verify OTP Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
-
 export {
-    startAuth,
-    register,
-    login,
-    refreshToken,
-    logout,
     forgotPassword,
+    login,
+    logout,
+    refreshToken,
+    register,
     resetPassword,
-    verifyAuthOtp,
+    startAuth,
+    verifyAuthOtp
 };

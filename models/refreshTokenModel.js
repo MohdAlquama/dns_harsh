@@ -66,9 +66,21 @@ const revokeRefreshToken = async (tokenId) => {
     return result.affectedRows > 0;
 };
 
+const revokeAllRefreshTokensForUser = async (userId) => {
+    const [result] = await db.execute(
+        `UPDATE refresh_tokens
+         SET revoked_at = CURRENT_TIMESTAMP
+         WHERE user_id = ? AND revoked_at IS NULL`,
+        [userId]
+    );
+
+    return result.affectedRows;
+};
+
 
 export {
     saveRefreshToken,
     findRefreshToken,
-    revokeRefreshToken
+    revokeRefreshToken,
+    revokeAllRefreshTokensForUser
 };
