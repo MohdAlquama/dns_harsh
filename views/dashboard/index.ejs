@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Document</title>
+</head>
+<body>
+  <!-- views/dashboard/index.ejs -->
+
+<!-- Hero Section -->
+ <%- include("../layouts/sidebar") %>
+
+<div class="lg:pl-[260px]">
+
+    <%- include("../layouts/header") %>
+
+    <main class="p-6">
+
+        <!-- Dashboard Content -->
+
+    </main>
+
+</div>
+<section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 to-violet-800 p-6 lg:p-10 mb-8 shadow-lg">
+  <canvas id="heroParticles" class="absolute inset-0 w-full h-full opacity-60"></canvas>
+
+  <div class="relative z-10">
+    <h1 class="text-2xl lg:text-3xl font-bold text-white">Welcome back, Admin 👋</h1>
+    <p class="text-violet-100 mt-2 max-w-xl">
+      Here's what's happening with your platform today. Track performance, manage content, and grow your community.
+    </p>
+    <div class="flex flex-wrap gap-3 mt-6">
+      <button class="flex items-center gap-2 bg-white text-violet-700 font-semibold px-5 py-2.5 rounded-2xl hover:bg-violet-50 transition-all duration-200 hover:-translate-y-0.5 shadow-sm">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        Add Course
+      </button>
+      <button class="flex items-center gap-2 bg-white/10 text-white font-semibold px-5 py-2.5 rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-200 hover:-translate-y-0.5">
+        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+        View Reports
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Statistic Cards -->
+<section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+  <div class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+    <div class="flex items-center justify-between">
+      <div class="w-12 h-12 rounded-2xl bg-violet-100 flex items-center justify-center">
+        <i data-lucide="book-open" class="w-6 h-6 text-violet-600"></i>
+      </div>
+      <span class="flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+        <i data-lucide="trending-up" class="w-3 h-3"></i> 12%
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-slate-800 mt-4">248</p>
+    <p class="text-sm text-slate-500">Total Courses</p>
+  </div>
+
+  <div class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+    <div class="flex items-center justify-between">
+      <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
+        <i data-lucide="graduation-cap" class="w-6 h-6 text-blue-600"></i>
+      </div>
+      <span class="flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+        <i data-lucide="trending-up" class="w-3 h-3"></i> 8%
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-slate-800 mt-4">12,540</p>
+    <p class="text-sm text-slate-500">Students</p>
+  </div>
+
+  <div class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+    <div class="flex items-center justify-between">
+      <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
+        <i data-lucide="indian-rupee" class="w-6 h-6 text-green-600"></i>
+      </div>
+      <span class="flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+        <i data-lucide="trending-up" class="w-3 h-3"></i> 24%
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-slate-800 mt-4">₹8.4L</p>
+    <p class="text-sm text-slate-500">Revenue</p>
+  </div>
+
+  <div class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+    <div class="flex items-center justify-between">
+      <div class="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center">
+        <i data-lucide="users" class="w-6 h-6 text-orange-600"></i>
+      </div>
+      <span class="flex items-center gap-1 text-xs font-semibold text-red-500 bg-red-50 px-2 py-1 rounded-full">
+        <i data-lucide="trending-down" class="w-3 h-3"></i> 3%
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-slate-800 mt-4">3,120</p>
+    <p class="text-sm text-slate-500">Users</p>
+  </div>
+
+</section>
+
+<!-- Quick Actions -->
+<section class="mb-8">
+  <h2 class="text-lg font-semibold text-slate-800 mb-4">Quick Actions</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+
+    <a href="/courses/new" class="group bg-white rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-slate-100">
+      <div class="w-11 h-11 rounded-2xl bg-violet-100 flex items-center justify-center group-hover:bg-violet-600 transition-colors duration-300">
+        <i data-lucide="book-plus" class="w-5 h-5 text-violet-600 group-hover:text-white transition-colors duration-300"></i>
+      </div>
+      <span class="text-xs font-medium text-slate-600 text-center">Add Course</span>
+    </a>
+
+    <a href="/test-series/new" class="group bg-white rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-slate-100">
+      <div class="w-11 h-11 rounded-2xl bg-violet-100 flex items-center justify-center group-hover:bg-violet-600 transition-colors duration-300">
+        <i data-lucide="file-plus" class="w-5 h-5 text-violet-600 group-hover:text-white transition-colors duration-300"></i>
+      </div>
+      <span class="text-xs font-medium text-slate-600 text-center">Add Test</span>
+    </a>
+
+    <a href="/pdf-notes/new" class="group bg-white rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-slate-100">
+      <div class="w-11 h-11 rounded-2xl bg-violet-100 flex items-center justify-center group-hover:bg-violet-600 transition-colors duration-300">
+        <i data-lucide="file-up" class="w-5 h-5 text-violet-600 group-hover:text-white transition-colors duration-300"></i>
+      </div>
+      <span class="text-xs font-medium text-slate-600 text-center">Upload Notes</span>
+    </a>
+
+    <a href="/gallery/new" class="group bg-white rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-slate-100">
+      <div class="w-11 h-11 rounded-2xl bg-violet-100 flex items-center justify-center group-hover:bg-violet-600 transition-colors duration-300">
+        <i data-lucide="image-plus" class="w-5 h-5 text-violet-600 group-hover:text-white transition-colors duration-300"></i>
+      </div>
+      <span class="text-xs font-medium text-slate-600 text-center">Add Image</span>
+    </a>
+
+    <a href="/users" class="group bg-white rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-slate-100">
+      <div class="w-11 h-11 rounded-2xl bg-violet-100 flex items-center justify-center group-hover:bg-violet-600 transition-colors duration-300">
+        <i data-lucide="user-cog" class="w-5 h-5 text-violet-600 group-hover:text-white transition-colors duration-300"></i>
+      </div>
+      <span class="text-xs font-medium text-slate-600 text-center">Manage Users</span>
+    </a>
+
+    <a href="/settings" class="group bg-white rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-slate-100">
+      <div class="w-11 h-11 rounded-2xl bg-violet-100 flex items-center justify-center group-hover:bg-violet-600 transition-colors duration-300">
+        <i data-lucide="settings-2" class="w-5 h-5 text-violet-600 group-hover:text-white transition-colors duration-300"></i>
+      </div>
+      <span class="text-xs font-medium text-slate-600 text-center">Settings</span>
+    </a>
+
+  </div>
+</section>
+
+<!-- Recent Data Grid -->
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+  <!-- Recent Payments -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+      <h3 class="font-semibold text-slate-800">Recent Payments</h3>
+      <a href="/payments" class="text-xs font-medium text-violet-600 hover:text-violet-700">View all</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-slate-400 border-b border-slate-100">
+            <th class="px-5 py-3 font-medium">Student</th>
+            <th class="px-5 py-3 font-medium">Course</th>
+            <th class="px-5 py-3 font-medium">Amount</th>
+            <th class="px-5 py-3 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="px-5 py-3 flex items-center gap-2">
+              <img src="https://ui-avatars.com/api/?name=Rahul+Sharma&background=ede9fe&color=7c3aed" class="w-7 h-7 rounded-full" />
+              <span class="text-slate-700">Rahul Sharma</span>
+            </td>
+            <td class="px-5 py-3 text-slate-500">SSC CGL Batch</td>
+            <td class="px-5 py-3 text-slate-700 font-medium">₹2,499</td>
+            <td class="px-5 py-3"><span class="px-2.5 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Paid</span></td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="px-5 py-3 flex items-center gap-2">
+              <img src="https://ui-avatars.com/api/?name=Priya+Singh&background=ede9fe&color=7c3aed" class="w-7 h-7 rounded-full" />
+              <span class="text-slate-700">Priya Singh</span>
+            </td>
+            <td class="px-5 py-3 text-slate-500">Banking Test Series</td>
+            <td class="px-5 py-3 text-slate-700 font-medium">₹1,199</td>
+            <td class="px-5 py-3"><span class="px-2.5 py-1 text-xs font-semibold text-amber-700 bg-amber-100 rounded-full">Pending</span></td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="px-5 py-3 flex items-center gap-2">
+              <img src="https://ui-avatars.com/api/?name=Amit+Kumar&background=ede9fe&color=7c3aed" class="w-7 h-7 rounded-full" />
+              <span class="text-slate-700">Amit Kumar</span>
+            </td>
+            <td class="px-5 py-3 text-slate-500">UPSC Foundation</td>
+            <td class="px-5 py-3 text-slate-700 font-medium">₹4,999</td>
+            <td class="px-5 py-3"><span class="px-2.5 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Paid</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Students -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+      <h3 class="font-semibold text-slate-800">Recent Students</h3>
+      <a href="/users" class="text-xs font-medium text-violet-600 hover:text-violet-700">View all</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-slate-400 border-b border-slate-100">
+            <th class="px-5 py-3 font-medium">Name</th>
+            <th class="px-5 py-3 font-medium">Email</th>
+            <th class="px-5 py-3 font-medium">Joined</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="px-5 py-3 flex items-center gap-2">
+              <img src="https://ui-avatars.com/api/?name=Sneha+Patel&background=ede9fe&color=7c3aed" class="w-7 h-7 rounded-full" />
+              <span class="text-slate-700">Sneha Patel</span>
+            </td>
+            <td class="px-5 py-3 text-slate-500">sneha@example.com</td>
+            <td class="px-5 py-3 text-slate-400">2 hours ago</td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="px-5 py-3 flex items-center gap-2">
+              <img src="https://ui-avatars.com/api/?name=Vikram+Rao&background=ede9fe&color=7c3aed" class="w-7 h-7 rounded-full" />
+              <span class="text-slate-700">Vikram Rao</span>
+            </td>
+            <td class="px-5 py-3 text-slate-500">vikram@example.com</td>
+            <td class="px-5 py-3 text-slate-400">5 hours ago</td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="px-5 py-3 flex items-center gap-2">
+              <img src="https://ui-avatars.com/api/?name=Anjali+Mehta&background=ede9fe&color=7c3aed" class="w-7 h-7 rounded-full" />
+              <span class="text-slate-700">Anjali Mehta</span>
+            </td>
+            <td class="px-5 py-3 text-slate-500">anjali@example.com</td>
+            <td class="px-5 py-3 text-slate-400">1 day ago</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<!-- Latest Notifications -->
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 mt-6">
+  <div class="px-5 py-4 border-b border-slate-100">
+    <h3 class="font-semibold text-slate-800">Latest Notifications</h3>
+  </div>
+  <div class="divide-y divide-slate-50">
+    <div class="flex items-start gap-3 px-5 py-4 hover:bg-slate-50 transition-colors duration-150">
+      <div class="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+        <i data-lucide="bell-ring" class="w-4 h-4 text-violet-600"></i>
+      </div>
+      <div>
+        <p class="text-sm text-slate-700">New course "Railway RRB 2026" published successfully</p>
+        <p class="text-xs text-slate-400 mt-0.5">30 minutes ago</p>
+      </div>
+    </div>
+    <div class="flex items-start gap-3 px-5 py-4 hover:bg-slate-50 transition-colors duration-150">
+      <div class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+        <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+      </div>
+      <div>
+        <p class="text-sm text-slate-700">Server backup completed successfully</p>
+        <p class="text-xs text-slate-400 mt-0.5">3 hours ago</p>
+      </div>
+    </div>
+    <div class="flex items-start gap-3 px-5 py-4 hover:bg-slate-50 transition-colors duration-150">
+      <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+      </div>
+      <div>
+        <p class="text-sm text-slate-700">Storage usage crossed 80% threshold</p>
+        <p class="text-xs text-slate-400 mt-0.5">Yesterday</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Three.js Particle Background for Hero -->
+<script>
+  (function () {
+    const canvas = document.getElementById('heroParticles');
+    if (!canvas) return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      canvas.clientWidth / canvas.clientHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 30;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    // Particle geometry
+    const particleCount = 150;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount * 3; i++) {
+      positions[i] = (Math.random() - 0.5) * 60;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    const material = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.35,
+      transparent: true,
+      opacity: 0.6,
+    });
+
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      particles.rotation.y += 0.0008;
+      particles.rotation.x += 0.0003;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    });
+  })();
+</script>
+</body>
+</html>

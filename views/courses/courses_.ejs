@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Current Affairs Course Settings</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #d8b4fe;
+            border-radius: 4px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background-color: #f3f4f6;
+        }
+
+        .grid-visible {
+            display: grid !important;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen p-4 md:p-8">
+<div class="max-w-7xl mx-auto space-y-6">
+
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-purple-800">Course Settings</h1>
+        <p class="text-gray-500 text-sm mt-1">Manage course details, pricing, discount, and publishing status.</p>
+    </div>
+
+    <form action="#" method="POST" enctype="multipart/form-data" class="space-y-6">
+
+        <!-- 1. BASIC DETAILS -->
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+            <h2 class="text-lg font-semibold text-purple-800 mb-4 border-b border-gray-100 pb-2">
+                1. Basic Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                    <input type="text" name="course_name" placeholder="Enter course name"
+                        class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <input type="text" name="category" placeholder="Enter category"
+                        class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                    <select name="language"
+                        class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none">
+                        <option value="">Select Language</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="English">English</option>
+                        <option value="Hinglish">Hinglish</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Default Image Upload</label>
+                    <label class="flex flex-col items-center justify-center w-full h-[70px] border-2 border-purple-200 border-dashed rounded cursor-pointer bg-purple-50 hover:bg-purple-100">
+                        <p class="text-xs text-gray-500">
+                            <span class="font-semibold text-purple-700">Click to upload</span>
+                            <span class="block mt-1">JPG, PNG, WEBP</span>
+                        </p>
+                        <input type="file" name="course_image" accept="image/*" class="hidden">
+                    </label>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
+                    <textarea name="short_description" rows="2" placeholder="Enter short description"
+                        class="w-full rounded border border-gray-300 p-2 text-sm resize-y focus:border-purple-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Long Description</label>
+                    <textarea name="long_description" rows="4" placeholder="Enter long description"
+                        class="w-full rounded border border-gray-300 p-2 text-sm resize-y focus:border-purple-500 focus:outline-none"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. PRICING -->
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+            <h2 class="text-lg font-semibold text-purple-800 mb-4 border-b border-gray-100 pb-2">
+                2. Pricing
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <!-- Original Price -->
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Original Price (₹)
+                    </label>
+                    <input
+                        id="original_price"
+                        name="original_price"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="2999"
+                        oninput="calculateFinalPrice()"
+                        class="w-full rounded-lg border border-gray-300 bg-white p-3 text-sm focus:border-purple-500 focus:outline-none"
+                    >
+                    <p class="text-xs text-gray-500 mt-2">
+                        This price will appear crossed out when discount is active.
+                    </p>
+                </div>
+
+                <!-- Final Price Preview -->
+                <div class="rounded-xl border-2 border-purple-200 bg-purple-50 p-4">
+                    <label class="block text-sm font-semibold text-purple-800 mb-2">
+                        Final / Selling Price
+                    </label>
+                    <div class="rounded-lg bg-white border border-purple-200 p-3">
+                        <div id="old_price_preview" class="text-sm text-gray-400 line-through hidden">₹0.00</div>
+                        <div id="final_price_preview" class="text-2xl font-bold text-purple-800">₹0.00</div>
+                    </div>
+                    <p class="text-xs text-purple-600 mt-2">Automatically calculated from the discount.</p>
+                    <input type="hidden" id="final_price" name="final_price">
+                </div>
+
+                <!-- GST -->
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700">GST (%)</label>
+                            <p class="text-xs text-gray-500 mt-1">Enable GST if required.</p>
+                        </div>
+
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="gst_toggle" name="gst_enabled" class="sr-only peer"
+                                onchange="togglePricingField('gst_toggle','gst_field')">
+                            <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-purple-600
+                                after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                                peer-checked:after:translate-x-5"></div>
+                        </label>
+                    </div>
+
+                    <input id="gst_field" name="gst_percent" type="number" min="0" max="100"
+                        placeholder="18" disabled
+                        class="w-full rounded-lg border border-gray-300 p-3 text-sm bg-gray-100 focus:border-purple-500 focus:outline-none">
+                </div>
+
+                <!-- Platform Charge -->
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700">Platform Charge (₹)</label>
+                            <p class="text-xs text-gray-500 mt-1">Enable platform charge if required.</p>
+                        </div>
+
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="platform_toggle" name="platform_charge_enabled" class="sr-only peer"
+                                onchange="togglePricingField('platform_toggle','platform_field')">
+                            <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-purple-600
+                                after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                                peer-checked:after:translate-x-5"></div>
+                        </label>
+                    </div>
+
+                    <input id="platform_field" name="platform_charge" type="number" min="0" step="0.01"
+                        placeholder="50" disabled
+                        class="w-full rounded-lg border border-gray-300 p-3 text-sm bg-gray-100 focus:border-purple-500 focus:outline-none">
+                </div>
+
+            </div>
+
+            <!-- Discount -->
+            <div class="mt-5 rounded-xl border border-gray-200 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <label class="text-sm font-semibold text-gray-700">Discount</label>
+                        <p class="text-xs text-gray-500 mt-1">Choose percentage or fixed ₹ discount.</p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="discount_toggle" name="discount_enabled" class="sr-only peer"
+                            onchange="toggleDiscount()">
+                        <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-purple-600
+                            after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                            after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                            peer-checked:after:translate-x-5"></div>
+                    </label>
+                </div>
+
+                <div id="discount_fields" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Discount Type</label>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" id="percent_option"
+                                    onclick="selectDiscountType('percent')"
+                                    class="discount-type border-2 border-gray-200 rounded-xl p-4 text-left hover:border-purple-300 transition-all">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-bold text-gray-800">Percentage</p>
+                                            <p class="text-xs text-gray-500 mt-1">Discount in %</p>
+                                        </div>
+                                        <span class="text-2xl font-bold text-purple-600">%</span>
+                                    </div>
+                                </button>
+
+                                <button type="button" id="rs_option"
+                                    onclick="selectDiscountType('rs')"
+                                    class="discount-type border-2 border-gray-200 rounded-xl p-4 text-left hover:border-purple-300 transition-all">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-bold text-gray-800">Fixed Amount</p>
+                                            <p class="text-xs text-gray-500 mt-1">Discount in ₹</p>
+                                        </div>
+                                        <span class="text-2xl font-bold text-purple-600">₹</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label id="discount_value_label" class="block text-sm font-medium text-gray-700 mb-2">
+                                Discount Value
+                            </label>
+                            <div class="relative">
+                                <span id="discount_symbol"
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">%</span>
+                                <input id="discount_value" name="discount_value" type="number"
+                                    min="0" step="0.01" placeholder="Enter discount"
+                                    oninput="calculateFinalPrice()"
+                                    class="w-full rounded-lg border border-gray-300 p-3 pl-9 text-sm focus:border-purple-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. COURSE STATUS -->
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+            <h2 class="text-lg font-semibold text-purple-800 mb-4 border-b border-gray-100 pb-2">
+                3. Course Status
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label class="cursor-pointer">
+                    <input type="radio" name="course_status" value="draft" class="peer hidden" checked>
+                    <div class="rounded-xl border-2 border-gray-200 p-4 peer-checked:border-purple-600 peer-checked:bg-purple-50 transition">
+                        <p class="font-semibold text-gray-800">Draft</p>
+                        <p class="text-xs text-gray-500 mt-1">Save course without publishing.</p>
+                    </div>
+                </label>
+
+                <label class="cursor-pointer">
+                    <input type="radio" name="course_status" value="published" class="peer hidden">
+                    <div class="rounded-xl border-2 border-gray-200 p-4 peer-checked:border-purple-600 peer-checked:bg-purple-50 transition">
+                        <p class="font-semibold text-gray-800">Published</p>
+                        <p class="text-xs text-gray-500 mt-1">Make the course available.</p>
+                    </div>
+                </label>
+
+                <label class="cursor-pointer">
+                    <input type="radio" name="course_status" value="coming_soon" class="peer hidden">
+                    <div class="rounded-xl border-2 border-gray-200 p-4 peer-checked:border-purple-600 peer-checked:bg-purple-50 transition">
+                        <p class="font-semibold text-gray-800">Coming Soon</p>
+                        <p class="text-xs text-gray-500 mt-1">Show course as coming soon.</p>
+                    </div>
+                </label>
+            </div>
+        </section>
+
+        <!-- SUBMIT -->
+        <div class="flex justify-end pb-10">
+            <button type="submit"
+                class="bg-purple-700 text-white font-semibold px-7 py-3 rounded-lg hover:bg-purple-800 transition">
+                Save Course
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+function togglePricingField(toggleId, fieldId) {
+    const toggle = document.getElementById(toggleId);
+    const field = document.getElementById(fieldId);
+
+    if (toggle.checked) {
+        field.disabled = false;
+        field.classList.remove("bg-gray-100");
+    } else {
+        field.disabled = true;
+        field.value = "";
+        field.classList.add("bg-gray-100");
+    }
+}
+
+let discountType = "percent";
+
+function toggleDiscount() {
+    const toggle = document.getElementById("discount_toggle");
+    const fields = document.getElementById("discount_fields");
+
+    if (toggle.checked) {
+        fields.classList.remove("hidden");
+    } else {
+        fields.classList.add("hidden");
+        document.getElementById("discount_value").value = "";
+    }
+
+    calculateFinalPrice();
+}
+
+function selectDiscountType(type) {
+    discountType = type;
+
+    const percentOption = document.getElementById("percent_option");
+    const rsOption = document.getElementById("rs_option");
+    const symbol = document.getElementById("discount_symbol");
+    const label = document.getElementById("discount_value_label");
+
+    percentOption.classList.remove("border-purple-600", "bg-purple-50");
+    rsOption.classList.remove("border-purple-600", "bg-purple-50");
+
+    if (type === "percent") {
+        percentOption.classList.add("border-purple-600", "bg-purple-50");
+        symbol.innerText = "%";
+        label.innerText = "Discount Value (%)";
+    } else {
+        rsOption.classList.add("border-purple-600", "bg-purple-50");
+        symbol.innerText = "₹";
+        label.innerText = "Discount Value (₹)";
+    }
+
+    calculateFinalPrice();
+}
+
+function calculateFinalPrice() {
+    const original = parseFloat(document.getElementById("original_price").value) || 0;
+    const discountEnabled = document.getElementById("discount_toggle").checked;
+    const discount = parseFloat(document.getElementById("discount_value").value) || 0;
+
+    let finalPrice = original;
+
+    if (discountEnabled && original > 0 && discount > 0) {
+        if (discountType === "percent") {
+            finalPrice = original - (original * discount / 100);
+        } else {
+            finalPrice = original - discount;
+        }
+    }
+
+    finalPrice = Math.max(0, finalPrice);
+
+    document.getElementById("final_price").value = finalPrice.toFixed(2);
+    document.getElementById("final_price_preview").innerText =
+        "₹" + finalPrice.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    const oldPrice = document.getElementById("old_price_preview");
+
+    if (discountEnabled && finalPrice < original && original > 0) {
+        oldPrice.innerText = "₹" + original.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        oldPrice.classList.remove("hidden");
+    } else {
+        oldPrice.classList.add("hidden");
+    }
+}
+
+selectDiscountType("percent");
+</script>
+</body>
+</html>

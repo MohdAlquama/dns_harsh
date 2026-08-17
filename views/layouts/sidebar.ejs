@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNS Admin - Dashboard</title>
+    
+  
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+  
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-slate-10 font-sans antialiased">
+    
+
+<!-- SIDEBAR HTML -->
+<aside
+  id="sidebar"
+  class="fixed inset-y-0 left-0 h-screen w-[280px] bg-white border-r border-slate-200/80 shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex flex-col z-40 transition-all duration-300 -translate-x-full lg:translate-x-0"
+>
+  <div class="h-16 flex items-center px-6 border-b border-slate-100 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-200">
+        <i data-lucide="shield" class="w-4 h-4 text-white"></i>
+      </div>
+      <span class="text-xl font-bold bg-gradient-to-r from-violet-700 to-indigo-700 bg-clip-text text-transparent tracking-tight">DNS Admin</span>
+    </div>
+  </div>
+
+  <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-1.5 scrollbar-hide" id="navLinks">
+    <a href="/dashboard" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="layout-dashboard" class="w-5 h-5 transition-transform"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="/courses" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="book-open" class="w-5 h-5 transition-transform"></i>
+      <span>Courses</span>
+    </a>
+    <a href="/test-series" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="file-text" class="w-5 h-5 transition-transform"></i>
+      <span>Test Series</span>
+    </a>
+    <a href="/previous-papers" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="file-clock" class="w-5 h-5 transition-transform"></i>
+      <span>Previous Year Papers</span>
+    </a>
+    <a href="/current-affairs" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="newspaper" class="w-5 h-5 transition-transform"></i>
+      <span>Current Affairs</span>
+    </a>
+    <a href="/books" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="library" class="w-5 h-5 transition-transform"></i>
+      <span>Books</span>
+    </a>
+    <a href="/pdf-notes" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="file-down" class="w-5 h-5 transition-transform"></i>
+      <span>PDF Notes</span>
+    </a>
+    <a href="/free-courses" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="gift" class="w-5 h-5 transition-transform"></i>
+      <span>Free Courses</span>
+    </a>
+    <a href="/gallery" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="image" class="w-5 h-5 transition-transform"></i>
+      <span>Gallery</span>
+    </a>
+    <a href="/users" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="users" class="w-5 h-5 transition-transform"></i>
+      <span>Users</span>
+    </a>
+  </nav>
+</aside>
+
+<div
+  id="sidebarOverlay"
+  class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-30 hidden transition-all duration-300 lg:hidden"
+></div>
+
+<script>
+  // Initialize Icons
+  lucide.createIcons();
+
+  // --- NAYA LOGIC: Page load hone par check karega ki sidebar band rakhna hai ya khula ---
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebarState = localStorage.getItem('sidebarState');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    
+    // Agar state closed hai, toh page aate hi full screen kar do
+    if (sidebarState === 'closed' && window.innerWidth >= 1024) {
+      sidebar.classList.add('!-translate-x-full');
+      if (mainContent) {
+        mainContent.classList.remove('lg:ml-[260px]');
+        mainContent.classList.add('lg:ml-0');
+      }
+    }
+  });
+
+  // 1. Sidebar & Full Screen Toggle Logic
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    if (window.innerWidth >= 1024) {
+      // Laptop: Sidebar toggle
+      sidebar.classList.toggle('!-translate-x-full');
+      
+      // Screen Full/Normal Karne ka Logic
+      if (mainContent) {
+        mainContent.classList.toggle('lg:ml-[260px]'); 
+        mainContent.classList.toggle('lg:ml-0');      
+      }
+
+      // --- NAYA LOGIC: Button dabane par state save karein ---
+      if (sidebar.classList.contains('!-translate-x-full')) {
+        localStorage.setItem('sidebarState', 'closed'); // Band kar diya
+      } else {
+        localStorage.setItem('sidebarState', 'open'); // Khool diya
+      }
+
+    } else {
+      // Mobile: Sidebar toggle
+      sidebar.classList.toggle('-translate-x-full');
+      if (sidebarOverlay) {
+        sidebarOverlay.classList.toggle('hidden');
+      }
+    }
+  }
+
+  // 2. Active Tab Link Logic
+  const currentPath = window.location.pathname;
+  const navLinks = document.querySelectorAll('.nav-item');
+
+  const activeClasses = ['bg-violet-600', 'text-white', 'font-medium', 'shadow-md', 'shadow-violet-200'];
+  const inactiveClasses = ['text-slate-500', 'font-medium', 'hover:bg-violet-50', 'hover:text-violet-700', 'hover:translate-x-1'];
+
+  navLinks.forEach(link => {
+    const linkPath = link.getAttribute('href');
+    if (currentPath.includes(linkPath) || (currentPath === '/' && linkPath === '/dashboard')) {
+      link.classList.add(...activeClasses);
+      link.querySelector('i').classList.add('scale-110');
+    } else {
+      link.classList.add(...inactiveClasses);
+    }
+
+    // --- NAYA LOGIC: Kisi bhi link par click karne par sidebar band karke full screen kar do ---
+    link.addEventListener('click', () => {
+      if (window.innerWidth >= 1024) {
+        localStorage.setItem('sidebarState', 'closed');
+      }
+    });
+  });
+</script>
+</body>
+</html>

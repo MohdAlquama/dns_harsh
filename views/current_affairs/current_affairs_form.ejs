@@ -1,0 +1,1270 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Current Affairs Course Settings</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #d8b4fe;
+            border-radius: 4px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background-color: #f3f4f6;
+        }
+
+        .grid-visible {
+            display: grid !important;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen p-4 md:p-8">
+
+<div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Page Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-purple-800">
+            Current Affairs Course Settings
+        </h1>
+
+        <p class="text-gray-500 text-sm mt-1">
+            Manage course details, pricing, offers, and uploads.
+        </p>
+    </div>
+
+
+    <form action="#" method="POST" enctype="multipart/form-data" class="space-y-6">
+
+        <!-- ===================================================== -->
+        <!-- 1. BASIC DETAILS -->
+        <!-- ===================================================== -->
+
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+
+            <h2 class="text-lg font-semibold text-purple-800 mb-4 border-b border-gray-100 pb-2">
+                1. Basic Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Course Name
+                    </label>
+
+                    <input
+                        type="text"
+                        class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Short Description
+                    </label>
+
+                    <textarea
+                        rows="2"
+                        class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none resize-y"
+                    ></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Long Description
+                    </label>
+
+                    <textarea
+                        rows="2"
+                        class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none resize-y"
+                    ></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Default Image Upload
+                    </label>
+
+                    <label class="flex flex-col items-center justify-center w-full h-[60px] border-2 border-purple-200 border-dashed rounded cursor-pointer bg-purple-50 hover:bg-purple-100">
+
+                        <p class="text-xs text-gray-500">
+                            <span class="font-semibold text-purple-700">
+                                Click to upload
+                            </span>
+                        </p>
+
+                        <input type="file" class="hidden">
+                    </label>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- 3. PRICING -->
+        <!-- ===================================================== -->
+
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+
+            <h2 class="text-lg font-semibold text-purple-800 mb-4 border-b border-gray-100 pb-2">
+                3. Pricing (Rs)
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                <!-- Price -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Price (₹)
+                    </label>
+
+                    <input
+                        type="number"
+                        placeholder="0.00"
+                        class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none"
+                    >
+                </div>
+
+
+                <!-- GST -->
+                <div>
+
+                    <div class="flex items-center justify-between mb-2">
+
+                        <label class="text-sm font-medium text-gray-700">
+                            GST (%)
+                        </label>
+
+                        <label class="relative inline-flex items-center cursor-pointer">
+
+                            <input
+                                type="checkbox"
+                                id="gst_toggle"
+                                class="sr-only peer"
+                                onchange="togglePricingField('gst_toggle','gst_field')"
+                            >
+
+                            <div class="w-10 h-5 bg-gray-300 rounded-full peer
+                                peer-checked:bg-purple-600
+                                after:content-['']
+                                after:absolute after:top-[2px] after:left-[2px]
+                                after:bg-white after:rounded-full
+                                after:h-4 after:w-4
+                                after:transition-all
+                                peer-checked:after:translate-x-5">
+                            </div>
+
+                        </label>
+
+                    </div>
+
+                    <input
+                        id="gst_field"
+                        type="number"
+                        placeholder="18"
+                        disabled
+                        class="w-full rounded border border-gray-300 p-2 text-sm bg-gray-100 focus:border-purple-500 focus:outline-none"
+                    >
+
+                </div>
+
+
+                <!-- Platform Charge -->
+                <div>
+
+                    <div class="flex items-center justify-between mb-2">
+
+                        <label class="text-sm font-medium text-gray-700">
+                            Platform Charge (₹)
+                        </label>
+
+                        <label class="relative inline-flex items-center cursor-pointer">
+
+                            <input
+                                type="checkbox"
+                                id="platform_toggle"
+                                class="sr-only peer"
+                                onchange="togglePricingField('platform_toggle','platform_field')"
+                            >
+
+                            <div class="w-10 h-5 bg-gray-300 rounded-full peer
+                                peer-checked:bg-purple-600
+                                after:content-['']
+                                after:absolute after:top-[2px] after:left-[2px]
+                                after:bg-white after:rounded-full
+                                after:h-4 after:w-4
+                                after:transition-all
+                                peer-checked:after:translate-x-5">
+                            </div>
+
+                        </label>
+
+                    </div>
+
+                    <input
+                        id="platform_field"
+                        type="number"
+                        placeholder="0.00"
+                        disabled
+                        class="w-full rounded border border-gray-300 p-2 text-sm bg-gray-100 focus:border-purple-500 focus:outline-none"
+                    >
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- 4. GK STARTED -->
+        <!-- ===================================================== -->
+
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+
+            <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
+
+                <h2 class="text-lg font-semibold text-purple-800">
+                    4. GK Started
+                </h2>
+
+                <span class="text-xs text-gray-400">
+                    Choose either Coming Soon or Ads
+                </span>
+
+            </div>
+
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+
+                <!-- Start Date -->
+                <div>
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Start Date
+                    </label>
+
+                    <input
+                        type="date"
+                        class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none"
+                    >
+
+                </div>
+
+
+                <!-- End Date -->
+                <div>
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        End Date
+                    </label>
+
+                    <input
+                        type="date"
+                        class="w-full rounded border border-gray-300 p-2 text-sm focus:border-purple-500 focus:outline-none"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Toggle Area -->
+            <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <!-- Coming Soon -->
+                <div class="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-gray-50">
+
+                    <div>
+                        <p class="text-sm font-semibold text-gray-800">
+                            Coming Soon
+                        </p>
+
+                        <p class="text-xs text-gray-500 mt-1">
+                            Show course as coming soon
+                        </p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+
+                        <input
+                            type="checkbox"
+                            id="coming_soon_toggle"
+                            class="sr-only peer"
+                            onchange="toggleGKOption('coming')"
+                        >
+
+                        <div class="w-11 h-6 bg-gray-300 rounded-full
+                            peer-checked:bg-purple-600
+                            after:content-['']
+                            after:absolute after:top-[2px] after:left-[2px]
+                            after:bg-white after:rounded-full
+                            after:h-5 after:w-5
+                            after:transition-all
+                            peer-checked:after:translate-x-5">
+                        </div>
+
+                    </label>
+
+                </div>
+
+
+                <!-- Ads -->
+                <div class="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-gray-50">
+
+                    <div>
+                        <p class="text-sm font-semibold text-gray-800">
+                            Ads
+                        </p>
+
+                        <p class="text-xs text-gray-500 mt-1">
+                            Enable advertisement setup
+                        </p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+
+                        <input
+                            type="checkbox"
+                            id="main_ads_toggle"
+                            class="sr-only peer"
+                            onchange="toggleGKOption('ads')"
+                        >
+
+                        <div class="w-11 h-6 bg-gray-300 rounded-full
+                            peer-checked:bg-purple-600
+                            after:content-['']
+                            after:absolute after:top-[2px] after:left-[2px]
+                            after:bg-white after:rounded-full
+                            after:h-5 after:w-5
+                            after:transition-all
+                            peer-checked:after:translate-x-5">
+                        </div>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- 5. ADS SETUP -->
+        <!-- ===================================================== -->
+
+        <section
+            id="ads_setup_section"
+            class="hidden bg-white rounded-lg shadow-sm p-6 border border-gray-200"
+        >
+
+            <h2 class="text-lg font-semibold text-purple-800 mb-4 border-b border-gray-100 pb-2">
+                5. Ads Setup
+            </h2>
+
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Start Date
+                    </label>
+
+                    <input
+                        type="date"
+                        class="w-full rounded border border-gray-300 p-2 text-sm"
+                    >
+                </div>
+
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        End Date
+                    </label>
+
+                    <input
+                        type="date"
+                        class="w-full rounded border border-gray-300 p-2 text-sm"
+                    >
+                </div>
+
+
+                <!-- Ads Image -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Ads Image
+                    </label>
+
+                    <input
+                        type="file"
+                        accept="image/*"
+                        class="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 border border-gray-300 rounded cursor-pointer"
+                    >
+                </div>
+
+
+                <!-- Link Type -->
+                <div>
+
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Select Link Type
+                    </label>
+
+                    <div class="flex gap-4">
+
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="link_type"
+                                value="image"
+                                onchange="toggleAdsFields()"
+                            >
+                            <span class="text-sm">Image</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="link_type"
+                                value="button"
+                                onchange="toggleAdsFields()"
+                            >
+                            <span class="text-sm">Button</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="link_type"
+                                value="both"
+                                onchange="toggleAdsFields()"
+                            >
+                            <span class="text-sm">Both</span>
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Image URL -->
+                <div id="image_url_wrapper" class="hidden">
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Image URL
+                    </label>
+
+                    <input
+                        type="url"
+                        placeholder="https://"
+                        class="w-full rounded border border-gray-300 p-2 text-sm"
+                    >
+
+                </div>
+
+
+                <!-- Button URL -->
+                <div id="button_url_wrapper" class="hidden">
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Button URL
+                    </label>
+
+                    <input
+                        type="url"
+                        placeholder="https://"
+                        class="w-full rounded border border-gray-300 p-2 text-sm"
+                    >
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- 6. NOTIFICATION -->
+        <!-- ===================================================== -->
+
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+
+            <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-5">
+
+                <div>
+                    <h2 class="text-lg font-semibold text-purple-800">
+                        6. Notification
+                    </h2>
+
+                    <p class="text-xs text-gray-500 mt-1">
+                        Turn notification on only when you want to show it.
+                    </p>
+                </div>
+
+
+                <!-- Notification Toggle -->
+                <div class="flex items-center gap-3">
+
+                    <span
+                        id="notification_status"
+                        class="text-xs font-medium text-gray-500"
+                    >
+                        OFF
+                    </span>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+
+                        <input
+                            type="checkbox"
+                            id="notification_toggle"
+                            class="sr-only peer"
+                            onchange="toggleNotificationFields()"
+                        >
+
+                        <div class="w-12 h-6 bg-gray-300 rounded-full
+                            peer-checked:bg-purple-600
+                            after:content-['']
+                            after:absolute after:top-[2px] after:left-[2px]
+                            after:bg-white after:rounded-full
+                            after:h-5 after:w-5
+                            after:transition-all
+                            peer-checked:after:translate-x-6">
+                        </div>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="notification_fields"
+                class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+            >
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Title
+                    </label>
+
+                    <input
+                        type="text"
+                        class="w-full rounded border border-gray-300 p-2 text-sm"
+                    >
+                </div>
+
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Description
+                    </label>
+
+                    <textarea
+                        rows="1"
+                        class="w-full rounded border border-gray-300 p-2 text-sm resize-y"
+                    ></textarea>
+                </div>
+
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Start Date
+                    </label>
+
+                    <input
+                        type="date"
+                        class="w-full rounded border border-gray-300 p-2 text-sm"
+                    >
+                </div>
+
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        End Date
+                    </label>
+
+                    <input
+                        type="date"
+                        class="w-full rounded border border-gray-300 p-2 text-sm"
+                    >
+                </div>
+
+            </div>
+
+
+            <div
+                id="notification_submit"
+                class="hidden mt-4"
+            >
+
+                <button
+                    type="button"
+                    class="bg-purple-700 text-white font-medium px-5 py-2 rounded hover:bg-purple-800 text-sm"
+                >
+                    Submit Notification
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- 8. UPLOAD -->
+        <!-- ===================================================== -->
+
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+
+            <h2 class="text-lg font-semibold text-purple-800 mb-4 border-b border-gray-100 pb-2">
+                8. Upload
+            </h2>
+
+
+            <div class="mb-4">
+
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Choose Upload Type
+                </label>
+
+
+                <div class="flex gap-6">
+
+                    <!-- MASTER PDF -->
+                    <label class="flex items-center gap-2 cursor-pointer">
+
+                        <input
+                            type="radio"
+                            name="upload_type"
+                            value="master_pdf"
+                            class="w-4 h-4 text-purple-600"
+                            onchange="toggleUploadFields()"
+                        >
+
+                        <span class="text-sm text-gray-700">
+                            Master PDF
+                        </span>
+
+                    </label>
+
+
+                    <!-- NORMAL PDF -->
+                    <label class="flex items-center gap-2 cursor-pointer">
+
+                        <input
+                            type="radio"
+                            name="upload_type"
+                            value="normal_pdf"
+                            class="w-4 h-4 text-purple-600"
+                            onchange="toggleUploadFields()"
+                        >
+
+                        <span class="text-sm text-gray-700">
+                            Normal PDF
+                        </span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- MASTER PDF -->
+            <div
+                id="master_pdf_wrapper"
+                class="hidden"
+            >
+
+                <div class="rounded-lg border border-purple-200 bg-purple-50 p-5">
+
+                    <div class="flex items-center gap-3">
+
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                            <span class="text-purple-700 font-bold">
+                                ✓
+                            </span>
+                        </div>
+
+                        <div>
+
+                            <p class="text-sm font-semibold text-purple-800">
+                                Master PDF
+                            </p>
+
+                            <p class="text-sm text-purple-700 mt-1">
+                                In Service
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- NORMAL PDF -->
+            <div
+                id="normal_pdf_wrapper"
+                class="hidden grid-cols-1 md:grid-cols-2 gap-4 items-end"
+            >
+
+                <div>
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        PDF Name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="pdf_name"
+                        placeholder="Enter PDF name"
+                        class="w-full rounded border border-gray-300 p-2 text-sm"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Upload PDF
+                    </label>
+
+                    <input
+                        type="file"
+                        name="normal_pdf"
+                        accept=".pdf,application/pdf"
+                        class="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 border border-gray-300 rounded cursor-pointer"
+                    >
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- 9. OFFER -->
+        <!-- ===================================================== -->
+
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+
+            <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-5">
+
+                <div>
+                    <h2 class="text-lg font-semibold text-purple-800">
+                        9. Offer
+                    </h2>
+
+                    <p class="text-xs text-gray-500 mt-1">
+                        Enable offer when required.
+                    </p>
+                </div>
+
+
+                <!-- Offer Toggle -->
+                <label class="relative inline-flex items-center cursor-pointer">
+
+                    <input
+                        type="checkbox"
+                        id="offer_toggle"
+                        class="sr-only peer"
+                        onchange="toggleOfferFields()"
+                    >
+
+                    <div class="w-12 h-6 bg-gray-300 rounded-full
+                        peer-checked:bg-purple-600
+                        after:content-['']
+                        after:absolute after:top-[2px] after:left-[2px]
+                        after:bg-white after:rounded-full
+                        after:h-5 after:w-5
+                        after:transition-all
+                        peer-checked:after:translate-x-6">
+                    </div>
+
+                </label>
+
+            </div>
+
+
+            <div
+                id="offer_fields"
+                class="hidden"
+            >
+
+                <!-- Offer Name -->
+                <div class="mb-5 max-w-md">
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Offer Name
+                    </label>
+
+                    <input
+                        type="text"
+                        placeholder="Enter Offer Name"
+                        class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-purple-500 focus:outline-none"
+                    >
+
+                </div>
+
+
+                <!-- Choose Discount -->
+                <div>
+
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        Discount Type
+                    </label>
+
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+
+                        <!-- PERCENT -->
+                        <button
+                            type="button"
+                            id="percent_option"
+                            onclick="selectOfferType('percent')"
+                            class="offer-type border-2 border-gray-200 rounded-xl p-5 text-left hover:border-purple-300 transition-all"
+                        >
+
+                            <div class="flex items-center justify-between">
+
+                                <div>
+
+                                    <p class="text-lg font-bold text-gray-800">
+                                        Percentage
+                                    </p>
+
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Discount in %
+                                    </p>
+
+                                </div>
+
+                                <div class="text-2xl font-bold text-purple-600">
+                                    %
+                                </div>
+
+                            </div>
+
+                        </button>
+
+
+                        <!-- RUPEES -->
+                        <button
+                            type="button"
+                            id="rs_option"
+                            onclick="selectOfferType('rs')"
+                            class="offer-type border-2 border-gray-200 rounded-xl p-5 text-left hover:border-purple-300 transition-all"
+                        >
+
+                            <div class="flex items-center justify-between">
+
+                                <div>
+
+                                    <p class="text-lg font-bold text-gray-800">
+                                        Fixed Amount
+                                    </p>
+
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Discount in ₹
+                                    </p>
+
+                                </div>
+
+                                <div class="text-2xl font-bold text-purple-600">
+                                    ₹
+                                </div>
+
+                            </div>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RATE BOX -->
+                <div
+                    id="offer_rate_wrapper"
+                    class="hidden mt-5 max-w-md"
+                >
+
+                    <label
+                        id="offer_rate_label"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Rate
+                    </label>
+
+                    <div class="relative">
+
+                        <span
+                            id="offer_rate_symbol"
+                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold"
+                        >
+                        </span>
+
+                        <input
+                            type="number"
+                            id="offer_rate"
+                            placeholder="Enter rate"
+                            class="w-full rounded-lg border border-gray-300 p-3 pl-9 text-sm focus:border-purple-500 focus:outline-none"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- APPLY -->
+                <div
+                    id="offer_apply_wrapper"
+                    class="hidden mt-5"
+                >
+
+                    <button
+                        type="button"
+                        class="bg-purple-700 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-purple-800 text-sm"
+                    >
+                        Apply
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="pb-10"></div>
+
+    </form>
+
+</div>
+
+
+<script>
+
+    /* =========================================================
+       3. GST / PLATFORM
+    ========================================================= */
+
+    function togglePricingField(toggleId, fieldId) {
+
+        const toggle = document.getElementById(toggleId);
+        const field = document.getElementById(fieldId);
+
+        if (toggle.checked) {
+
+            field.disabled = false;
+            field.classList.remove("bg-gray-100");
+
+        } else {
+
+            field.disabled = true;
+            field.value = "";
+            field.classList.add("bg-gray-100");
+
+        }
+    }
+
+
+    /* =========================================================
+       4. COMING SOON / ADS
+       ONLY ONE CAN BE ON
+    ========================================================= */
+
+    function toggleGKOption(type) {
+
+        const comingSoon =
+            document.getElementById("coming_soon_toggle");
+
+        const ads =
+            document.getElementById("main_ads_toggle");
+
+        const adsSection =
+            document.getElementById("ads_setup_section");
+
+
+        if (type === "coming" && comingSoon.checked) {
+
+            ads.checked = false;
+
+            adsSection.classList.add("hidden");
+
+        }
+
+
+        if (type === "ads" && ads.checked) {
+
+            comingSoon.checked = false;
+
+            adsSection.classList.remove("hidden");
+
+        }
+
+
+        if (!ads.checked) {
+
+            adsSection.classList.add("hidden");
+
+        }
+
+    }
+
+
+    /* =========================================================
+       5. ADS LINK TYPE
+    ========================================================= */
+
+    function toggleAdsFields() {
+
+        const linkType =
+            document.querySelector(
+                'input[name="link_type"]:checked'
+            )?.value;
+
+        const imageWrapper =
+            document.getElementById("image_url_wrapper");
+
+        const buttonWrapper =
+            document.getElementById("button_url_wrapper");
+
+
+        imageWrapper.classList.add("hidden");
+        buttonWrapper.classList.add("hidden");
+
+
+        if (linkType === "image") {
+
+            imageWrapper.classList.remove("hidden");
+
+        }
+
+        if (linkType === "button") {
+
+            buttonWrapper.classList.remove("hidden");
+
+        }
+
+        if (linkType === "both") {
+
+            imageWrapper.classList.remove("hidden");
+            buttonWrapper.classList.remove("hidden");
+
+        }
+
+    }
+
+
+    /* =========================================================
+       6. NOTIFICATION
+    ========================================================= */
+
+    function toggleNotificationFields() {
+
+        const toggle =
+            document.getElementById("notification_toggle");
+
+        const fields =
+            document.getElementById("notification_fields");
+
+        const submit =
+            document.getElementById("notification_submit");
+
+        const status =
+            document.getElementById("notification_status");
+
+
+        if (toggle.checked) {
+
+            fields.classList.remove("hidden");
+            fields.classList.add("grid");
+
+            submit.classList.remove("hidden");
+
+            status.innerText = "ON";
+            status.classList.remove("text-gray-500");
+            status.classList.add("text-purple-600");
+
+        } else {
+
+            fields.classList.add("hidden");
+            fields.classList.remove("grid");
+
+            submit.classList.add("hidden");
+
+            status.innerText = "OFF";
+            status.classList.remove("text-purple-600");
+            status.classList.add("text-gray-500");
+
+        }
+
+    }
+
+
+    /* =========================================================
+       8. UPLOAD
+       MASTER PDF = IN SERVICE
+    ========================================================= */
+
+    function toggleUploadFields() {
+
+        const uploadType =
+            document.querySelector(
+                'input[name="upload_type"]:checked'
+            )?.value;
+
+        const masterWrapper =
+            document.getElementById("master_pdf_wrapper");
+
+        const normalWrapper =
+            document.getElementById("normal_pdf_wrapper");
+
+
+        masterWrapper.classList.add("hidden");
+
+        normalWrapper.classList.add("hidden");
+        normalWrapper.classList.remove("grid");
+
+
+        if (uploadType === "master_pdf") {
+
+            masterWrapper.classList.remove("hidden");
+
+        }
+
+
+        if (uploadType === "normal_pdf") {
+
+            normalWrapper.classList.remove("hidden");
+            normalWrapper.classList.add("grid");
+
+        }
+
+    }
+
+
+    /* =========================================================
+       9. OFFER
+    ========================================================= */
+
+    function toggleOfferFields() {
+
+        const toggle =
+            document.getElementById("offer_toggle");
+
+        const fields =
+            document.getElementById("offer_fields");
+
+
+        if (toggle.checked) {
+
+            fields.classList.remove("hidden");
+
+        } else {
+
+            fields.classList.add("hidden");
+
+        }
+
+    }
+
+
+    /* =========================================================
+       9. OFFER TYPE
+       % OR ₹ ATTRACTIVE BOX
+    ========================================================= */
+
+    function selectOfferType(type) {
+
+        const percentOption =
+            document.getElementById("percent_option");
+
+        const rsOption =
+            document.getElementById("rs_option");
+
+        const rateWrapper =
+            document.getElementById("offer_rate_wrapper");
+
+        const applyWrapper =
+            document.getElementById("offer_apply_wrapper");
+
+        const rateLabel =
+            document.getElementById("offer_rate_label");
+
+        const rateSymbol =
+            document.getElementById("offer_rate_symbol");
+
+        const rateInput =
+            document.getElementById("offer_rate");
+
+
+        /* Reset */
+        percentOption.classList.remove(
+            "border-purple-600",
+            "bg-purple-50"
+        );
+
+        rsOption.classList.remove(
+            "border-purple-600",
+            "bg-purple-50"
+        );
+
+
+        /* Show Rate + Apply */
+        rateWrapper.classList.remove("hidden");
+        applyWrapper.classList.remove("hidden");
+
+
+        if (type === "percent") {
+
+            percentOption.classList.add(
+                "border-purple-600",
+                "bg-purple-50"
+            );
+
+            rateLabel.innerText = "Discount Rate (%)";
+            rateSymbol.innerText = "%";
+            rateInput.placeholder = "Enter percentage";
+
+        }
+
+
+        if (type === "rs") {
+
+            rsOption.classList.add(
+                "border-purple-600",
+                "bg-purple-50"
+            );
+
+            rateLabel.innerText = "Discount Rate (₹)";
+            rateSymbol.innerText = "₹";
+            rateInput.placeholder = "Enter amount";
+
+        }
+
+    }
+
+</script>
+
+</body>
+</html>
+

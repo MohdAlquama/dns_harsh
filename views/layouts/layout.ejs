@@ -1,0 +1,49 @@
+<!-- views/layouts/layout.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof title !== 'undefined' ? title : 'DNS Admin' %></title>
+
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="/css/output.css" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<!-- Body mein h-screen add karein -->
+<body class="bg-slate-50 font-sans antialiased text-slate-800 flex overflow-hidden h-screen">
+
+  <!-- Sidebar -->
+  <%- include('./sidebar') %>
+
+  <!-- Yahan min-h-screen ko hatakar h-screen kar dein -->
+  <div id="mainContent" class="flex flex-col flex-1 w-full h-screen transition-all duration-300 lg:ml-[260px]">
+    
+    <!-- Header -->
+    <%- include('./header') %>
+
+    <!-- Page Content (Ab yahan perfectly scroll hoga) -->
+    <main class="flex-1 p-4 lg:p-8 animate-fadeIn overflow-x-hidden overflow-y-auto relative">
+      <%- include(page) %>
+    </main>
+
+  </div>
+  <!-- Init Lucide Icons -->
+  <script>
+    lucide.createIcons();
+  </script>
+
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.4s ease-out;
+    }
+  </style>
+
+</body>
+</html>
