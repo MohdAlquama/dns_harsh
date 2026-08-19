@@ -13,6 +13,10 @@ import createAuthConfigTable from "./models/authConfigTable.js";
 import authConfigRoutes from "./routes/authConfigRoutes.js";
 import { showAuthSettings } from "./controllers/authConfigController.js";
 import createCurrentAffairsTables from "./models/currentAffairsTables.js";
+import createAdTables from "./models/adTables.js";
+import adRoutes from "./routes/adRoutes.js";
+import currentAffairsApiRoutes from "./routes/currentAffairsApiRoutes.js";
+import apiCors from "./middleware/apiCors.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -32,12 +36,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/api", apiCors);
 
 // Routes
 app.use('/dashboard', getDashboard);
 app.use("/", currentAffairsRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/auth-config", authConfigRoutes);
+app.use("/api/v1/ads", adRoutes);
+app.use("/api/v1/current-affairs", currentAffairsApiRoutes);
 app.get("/auth-settings", showAuthSettings);
 
 // Redirect root to dashboard
@@ -50,6 +57,7 @@ await createOtpTable();
 await createRefreshTokenTable();
 await createAuthConfigTable();
 await createCurrentAffairsTables();
+await createAdTables();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

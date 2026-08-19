@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ads and Current Affairs API Demo</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #172033; background: #f5f7fb; }
+    body { max-width: 760px; margin: 0 auto; padding: 32px 18px; }
+    section { background: white; border: 1px solid #dde3ee; border-radius: 16px; padding: 20px; margin: 18px 0; }
+    .ad { display: none; grid-template-columns: 140px 1fr; gap: 18px; align-items: center; }
+    .ad img { width: 140px; height: 100px; border-radius: 10px; object-fit: cover; background: #edf0f5; }
+    .label { color: #687386; font-size: 12px; text-transform: uppercase; }
+    button, a.cta { border: 0; border-radius: 9px; padding: 10px 14px; background: #5b35d5; color: white; cursor: pointer; text-decoration: none; display: inline-block; }
+    input[type=text] { width: min(420px, 90%); padding: 9px; border: 1px solid #cbd3df; border-radius: 8px; }
+    li { margin: 10px 0; }
+    @media (max-width: 520px) { .ad { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>Shared Web/App API Demo</h1>
+  <p>This page asks the same JSON APIs that a mobile app would call.</p>
+
+  <section>
+    <h2>Ad decision</h2>
+    <label><input id="consent" type="checkbox"> Allow contextual personalization</label>
+    <p><input id="keywords" type="text" value="current affairs, exam, education" aria-label="Page keywords"></p>
+    <button id="loadAd" type="button">Request an ad</button>
+    <p id="adStatus" role="status"></p>
+    <article id="ad" class="ad" aria-label="Advertisement">
+      <img id="adImage" alt="">
+      <div>
+        <div class="label">Advertisement</div>
+        <h3 id="adTitle"></h3>
+        <p id="adBody"></p>
+        <a id="adLink" class="cta" rel="sponsored noopener">Learn more</a>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>Current affairs</h2>
+    <button id="loadCourses" type="button">Load courses</button>
+    <p id="courseStatus" role="status"></p>
+    <ul id="courses"></ul>
+  </section>
+
+  <script type="module">
+    const $ = (selector) => document.querySelector(selector);
+    const api = async (url, options = {}) => {
+      const response = await fetch(url, options);
+      if (response.status === 204) return null;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || `HTTP ${response.status}`);
+      return data;
+    };
+    const deviceType = matchMedia('(max-width: 600px)').matches ? 'mobile' : 'web';
+    const sessionId = sessionStorage.adDemoSession || crypto.randomUUID();
+    sessionStorage.adDemoSession = sessionId;
+
+    const sendEvent = (requestId, type) => fetch('/api/v1/ads/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestId, type }),
+      keepalive: true
+    });
+
+    $('#loadAd').addEventListener('click', async () => {
+      $('#ad').style.display = 'none';
+      $('#adStatus').textContent = 'Selecting an eligible ad…';
+      try {
+        const consent = $('#consent').checked;
+        const result = await api('/api/v1/ads/decision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            placement: 'current-affairs-top',
+            sessionId,
+            consent: { personalizedAds: consent },
+            context: { keywords: $('#keywords').value.split(',').map(value => value.trim()) },
+            device: { type: deviceType }
+          })
+        });
+        if (!result) {
+          $('#adStatus').textContent = 'No eligible ad is available.';
+          return;
+        }
+        $('#adTitle').textContent = result.ad.title;
+        $('#adBody').textContent = result.ad.body;
+        $('#adImage').src = result.ad.imageUrl || '';
+        $('#adImage').hidden = !result.ad.imageUrl;
+        $('#adLink').textContent = result.ad.callToAction;
+        $('#adLink').href = result.ad.landingUrl;
+        $('#adLink').onclick = () => { sendEvent(result.requestId, 'CLICK').catch(() => {}); };
+        $('#ad').style.display = 'grid';
+        $('#adStatus').textContent = '';
+        await sendEvent(result.requestId, 'IMPRESSION');
+      } catch (error) {
+        $('#adStatus').textContent = error.message;
+      }
+    });
+
+    $('#loadCourses').addEventListener('click', async () => {
+      $('#courseStatus').textContent = 'Loading…';
+      try {
+        const result = await api('/api/v1/current-affairs?limit=10');
+        $('#courses').replaceChildren(...result.data.map(course => {
+          const item = document.createElement('li');
+          item.textContent = `${course.name} — ₹${course.pricing.basePrice} — ${course.status}`;
+          return item;
+        }));
+        $('#courseStatus').textContent = result.data.length ? '' : 'No published courses.';
+      } catch (error) {
+        $('#courseStatus').textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>

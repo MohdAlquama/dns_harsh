@@ -135,4 +135,53 @@ const listCurrentAffairsCourses = async () => {
     return rows;
 };
 
-export { createCurrentAffairsCourse, listCurrentAffairsCourses };
+const listPublicCurrentAffairs = async ({ limit, offset }) => {
+    const [courses] = await db.execute(
+        `SELECT
+            c.id, c.course_name, c.short_description, c.long_description,
+            c.default_image_path, c.start_date, c.end_date, c.status,
+            p.base_price, p.gst_enabled, p.gst_percent,
+            p.platform_charge_enabled, p.platform_charge
+         FROM current_affairs_courses c
+         INNER JOIN current_affairs_pricing p ON p.course_id = c.id
+         WHERE c.status IN ('PUBLISHED', 'COMING_SOON')
+           AND (c.end_date IS NULL OR c.end_date >= CURRENT_DATE)
+         ORDER BY c.start_date DESC, c.id DESC
+         LIMIT ? OFFSET ?`,
+        [limit, offset]
+    );
+
+    if (courses.length === 0) return [];
+    const ids = courses.map((course) => course.id);
+    const placeholders = ids.map(() => "?").join(",");
+    const [offers] = await db.execute(
+        `SELECT course_id, id, offer_name, discount_type, discount_value
+         FROM current_affairs_offers
+         WHERE is_active = 1 AND course_id IN (${placeholders})`,
+        ids
+    );
+    const [notifications] = await db.execute(
+        `SELECT course_id, id, title, description, start_date, end_date
+         FROM current_affairs_notifications
+         WHERE is_enabled = 1
+           AND (start_date IS NULL OR start_date <= CURRENT_DATE)
+           AND (end_date IS NULL OR end_date >= CURRENT_DATE)
+           AND course_id IN (${placeholders})`,
+        ids
+    );
+    const [documents] = await db.execute(
+        `SELECT course_id, id, document_type, document_name, file_path
+         FROM current_affairs_documents
+         WHERE status = 'ACTIVE' AND course_id IN (${placeholders})`,
+        ids
+    );
+
+    return courses.map((course) => ({
+        ...course,
+        offers: offers.filter((item) => item.course_id === course.id),
+        notifications: notifications.filter((item) => item.course_id === course.id),
+        documents: documents.filter((item) => item.course_id === course.id)
+    }));
+};
+
+export { createCurrentAffairsCourse, listCurrentAffairsCourses, listPublicCurrentAffairs };
