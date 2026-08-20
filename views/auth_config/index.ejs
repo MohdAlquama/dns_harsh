@@ -6,7 +6,7 @@
     </div>
     <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">OTP Provider</h1>
     <p class="mt-2 text-sm text-slate-500 max-w-2xl">
-      Configure the 2Factor API key used to send registration and password-reset OTPs.
+      View the one-time 2Factor configuration used for admin login, registration, and password-reset OTPs.
     </p>
   </div>
 
@@ -87,7 +87,7 @@
           <div>
             <p class="text-sm font-semibold text-violet-900">Used automatically</p>
             <p class="text-xs leading-5 text-violet-700 mt-1">
-              Once saved, registration and forgot-password APIs will use this provider automatically.
+              Admin login, registration, and forgot-password APIs use this provider automatically.
             </p>
           </div>
         </div>
@@ -127,6 +127,13 @@
       statusUpdated.textContent = data.updatedAt
         ? `Last updated ${new Date(data.updatedAt).toLocaleString()}`
         : 'Save an API key to enable OTP delivery';
+      if (active) {
+        apiKeyInput.disabled = true;
+        apiKeyInput.placeholder = 'Configured during one-time setup';
+        toggleKey.disabled = true;
+        saveButton.disabled = true;
+        saveButton.querySelector('span').textContent = 'Configuration locked';
+      }
     };
 
     const loadStatus = async () => {
@@ -179,8 +186,10 @@
       } catch (error) {
         showMessage(error.message, 'error');
       } finally {
-        saveButton.disabled = false;
-        saveButton.querySelector('span').textContent = 'Save API key';
+        if (!apiKeyInput.disabled) {
+          saveButton.disabled = false;
+          saveButton.querySelector('span').textContent = 'Save API key';
+        }
       }
     });
 

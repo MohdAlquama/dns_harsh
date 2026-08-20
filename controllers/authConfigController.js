@@ -33,6 +33,14 @@ const getTwoFactorStatus = async (req, res) => {
 const saveTwoFactor = async (req, res) => {
     try {
 
+        const existing = await getTwoFactorConfigStatus();
+        if (existing) {
+            return res.status(409).json({
+                success: false,
+                message: "OTP provider is already configured and cannot be configured again"
+            });
+        }
+
         const apiKey = typeof req.body.apiKey === "string" ? req.body.apiKey.trim() : "";
 
         if (!apiKey) {

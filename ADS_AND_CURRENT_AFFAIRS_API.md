@@ -138,8 +138,9 @@ GET /api/v1/current-affairs?page=1&limit=20
 
 Only `PUBLISHED` or `COMING_SOON` courses that have not ended are returned.
 The response contains nested pricing, offers, active notifications, and active
-documents. File paths are returned as absolute URLs so web and mobile clients
-can use them directly.
+documents. Paid document URLs stay locked in this public response. Login and use
+the purchase flow in [CASHFREE_PAYMENT_API.md](./CASHFREE_PAYMENT_API.md) to buy
+an item and retrieve its unlocked documents.
 
 ## Mobile example (React Native)
 

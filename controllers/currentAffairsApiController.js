@@ -31,11 +31,17 @@ const serializeCourse = (req, course) => ({
         startDate: notification.start_date,
         endDate: notification.end_date
     })),
+    purchase: {
+        requiresLogin: Number(course.base_price) > 0,
+        createOrderEndpoint: "/api/v1/payments/orders",
+        requestField: "currentAffairsId"
+    },
     documents: course.documents.map((document) => ({
         id: document.id,
         type: document.document_type,
         name: document.document_name,
-        downloadUrl: absoluteUrl(req, document.file_path)
+        locked: Number(course.base_price) > 0,
+        downloadUrl: Number(course.base_price) > 0 ? null : absoluteUrl(req, document.file_path)
     }))
 });
 

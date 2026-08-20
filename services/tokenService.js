@@ -46,9 +46,12 @@ const verifyRefreshToken = (token) => {
     );
 };
 
+const verifyAccessToken = (token) => jwt.verify(token, ACCESS_TOKEN_SECRET);
+
 
 export {
     createAccessToken,
     createRefreshToken,
+    verifyAccessToken,
     verifyRefreshToken
 };

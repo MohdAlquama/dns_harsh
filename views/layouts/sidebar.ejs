@@ -86,6 +86,20 @@
       <i data-lucide="shield-check" class="w-5 h-5 transition-transform"></i>
       <span>OTP Settings</span>
     </a>
+    <a href="/orders" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="receipt-text" class="w-5 h-5 transition-transform"></i>
+      <span>Orders & Refunds</span>
+    </a>
+    <a href="/payment-settings" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="credit-card" class="w-5 h-5 transition-transform"></i>
+      <span>Cashfree Settings</span>
+    </a>
+    <% if (typeof admin !== 'undefined' && admin?.role === 'SUPER_ADMIN') { %>
+    <a href="/admins" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="user-cog" class="w-5 h-5 transition-transform"></i>
+      <span>Administrators</span>
+    </a>
+    <% } %>
   </nav>
 </aside>
 

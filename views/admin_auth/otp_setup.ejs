@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>One-time OTP setup | DNS</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+  <main class="w-full max-w-lg rounded-3xl bg-white p-7 sm:p-9 shadow-2xl">
+    <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">ONE-TIME SETUP</span>
+    <h1 class="text-3xl font-bold text-slate-900 mt-4">Configure admin OTP</h1>
+    <p class="text-sm text-slate-500 mt-2"><%= admin.name %>, no OTP provider exists yet. Add the 2Factor API key before entering the dashboard.</p>
+    <% if (error) { %><div class="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"><%= error %></div><% } %>
+    <form method="POST" action="/admin/otp-setup" class="mt-6 space-y-4">
+      <label class="block text-sm font-semibold text-slate-700">2Factor API key<input type="password" name="apiKey" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100" placeholder="Paste the 2Factor API key"></label>
+      <div class="rounded-xl bg-violet-50 border border-violet-100 p-4 text-xs leading-5 text-violet-800">This configuration can be created only once. After saving, an OTP will be sent to your registered admin phone.</div>
+      <button class="w-full rounded-xl bg-violet-600 py-3 text-white font-semibold hover:bg-violet-700">Save and send OTP</button>
+    </form>
+  </main>
+</body></html>

@@ -1,0 +1,44 @@
+<div class="max-w-5xl mx-auto space-y-6">
+  <div>
+    <p class="text-sm font-semibold text-violet-600">Payments</p>
+    <h1 class="text-2xl font-bold text-slate-900 mt-1">Cashfree configuration</h1>
+    <p class="text-sm text-slate-500 mt-1">Configure the server-side Payment Gateway credentials and callback URLs.</p>
+  </div>
+
+  <% if (saved) { %><div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">Cashfree settings saved.</div><% } %>
+  <% if (error) { %><div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><%= error %></div><% } %>
+
+  <form method="POST" action="/payment-settings" class="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 lg:p-8 space-y-7">
+    <div class="flex items-center justify-between rounded-2xl bg-slate-50 border border-slate-200 p-4">
+      <div><p class="font-semibold text-slate-800">Accept payments</p><p class="text-xs text-slate-500 mt-1">Keep disabled until sandbox credentials and webhook are ready.</p></div>
+      <label class="inline-flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="is_enabled" class="w-5 h-5 accent-violet-600" <%= config?.is_enabled || config?.is_enabled === 'on' ? 'checked' : '' %>> Enabled</label>
+    </div>
+    <div class="grid md:grid-cols-2 gap-5">
+      <label class="text-sm font-semibold text-slate-700">Environment
+        <select name="environment" class="mt-2 w-full rounded-xl border border-slate-300 p-3 bg-white">
+          <option value="SANDBOX" <%= config?.environment !== 'PRODUCTION' ? 'selected' : '' %>>Sandbox</option>
+          <option value="PRODUCTION" <%= config?.environment === 'PRODUCTION' ? 'selected' : '' %>>Production</option>
+        </select>
+      </label>
+      <label class="text-sm font-semibold text-slate-700">API version
+        <input name="api_version" value="<%= config?.api_version || '2025-01-01' %>" required pattern="20\d{2}-\d{2}-\d{2}" class="mt-2 w-full rounded-xl border border-slate-300 p-3">
+      </label>
+      <label class="text-sm font-semibold text-slate-700">Client ID
+        <input name="client_id" value="<%= config?.client_id || '' %>" autocomplete="off" class="mt-2 w-full rounded-xl border border-slate-300 p-3" placeholder="Cashfree App ID">
+      </label>
+      <label class="text-sm font-semibold text-slate-700">Client secret
+        <input type="password" name="client_secret" autocomplete="new-password" class="mt-2 w-full rounded-xl border border-slate-300 p-3" placeholder="<%= config?.hasSecret ? 'Stored securely — enter to replace' : 'Cashfree secret key' %>">
+      </label>
+      <label class="text-sm font-semibold text-slate-700 md:col-span-2">Return URL
+        <input type="url" name="return_url" value="<%= config?.return_url || '' %>" class="mt-2 w-full rounded-xl border border-slate-300 p-3" placeholder="https://example.com/payment/return?order_id={order_id}">
+      </label>
+      <label class="text-sm font-semibold text-slate-700 md:col-span-2">Webhook / notify URL
+        <input type="url" name="notify_url" value="<%= config?.notify_url || '' %>" class="mt-2 w-full rounded-xl border border-slate-300 p-3" placeholder="https://example.com/api/v1/payments/webhook">
+      </label>
+    </div>
+    <div class="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+      Set <code>PAYMENT_CONFIG_ENCRYPTION_KEY</code> to a long private value before saving credentials. Environment variables override database values.
+    </div>
+    <button class="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-white font-semibold hover:bg-violet-700"><i data-lucide="save" class="w-4 h-4"></i>Save configuration</button>
+  </form>
+</div>

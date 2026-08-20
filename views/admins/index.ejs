@@ -1,0 +1,15 @@
+<div class="max-w-6xl mx-auto space-y-6">
+  <div><p class="text-sm font-semibold text-violet-600">Super admin</p><h1 class="text-2xl font-bold text-slate-900 mt-1">Administrators</h1><p class="text-sm text-slate-500 mt-1">Create administrators who must use password and OTP for every new login.</p></div>
+  <% if (saved) { %><div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">Administrator created.</div><% } %>
+  <% if (error) { %><div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><%= error %></div><% } %>
+  <div class="grid lg:grid-cols-3 gap-6">
+    <form method="POST" action="/admins" class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 h-fit">
+      <h2 class="font-bold text-slate-900">Add administrator</h2>
+      <input name="name" required placeholder="Full name" class="w-full rounded-xl border border-slate-300 p-3">
+      <input name="phoneNumber" inputmode="numeric" required placeholder="10-digit phone" class="w-full rounded-xl border border-slate-300 p-3">
+      <input type="password" name="password" minlength="8" required placeholder="Temporary password" class="w-full rounded-xl border border-slate-300 p-3">
+      <button class="w-full rounded-xl bg-violet-600 py-3 text-white font-semibold">Create admin</button>
+    </form>
+    <section class="lg:col-span-2 bg-white border border-slate-200 rounded-3xl overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-left text-slate-500"><tr><th class="p-4">Administrator</th><th class="p-4">Role</th><th class="p-4">Status</th><th class="p-4">Created</th></tr></thead><tbody class="divide-y divide-slate-100"><% admins.forEach((item) => { %><tr><td class="p-4"><p class="font-semibold text-slate-800"><%= item.name %></p><p class="text-xs text-slate-500"><%= item.phone_number %></p></td><td class="p-4"><%= item.role.replace('_',' ') %></td><td class="p-4"><span class="rounded-full px-2 py-1 text-xs font-bold <%= item.status ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' %>"><%= item.status ? 'Active' : 'Disabled' %></span></td><td class="p-4 text-xs text-slate-500"><%= new Date(item.created_at).toLocaleDateString('en-IN') %></td></tr><% }) %></tbody></table></section>
+  </div>
+</div>

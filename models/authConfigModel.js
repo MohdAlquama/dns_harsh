@@ -50,9 +50,17 @@ const saveTwoFactorConfig = async (apiKey) => {
     return result;
 };
 
+const createTwoFactorConfigOnce = async (apiKey) => {
+    const [result] = await db.execute(
+        `INSERT INTO auth_config (provider, api_key, status) VALUES ('2FACTOR', ?, 1)`, [apiKey]
+    );
+    return result;
+};
+
 
 export {
     getTwoFactorConfig,
     getTwoFactorConfigStatus,
+    createTwoFactorConfigOnce,
     saveTwoFactorConfig
 };

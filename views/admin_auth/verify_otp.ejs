@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verify admin OTP | DNS</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+  <main class="w-full max-w-md rounded-3xl bg-white p-7 sm:p-9 shadow-2xl text-center">
+    <div class="w-16 h-16 mx-auto rounded-2xl bg-violet-100 text-violet-700 flex items-center justify-center text-2xl">✦</div>
+    <h1 class="text-3xl font-bold text-slate-900 mt-5">Verify OTP</h1>
+    <p class="text-sm text-slate-500 mt-2">Enter the OTP sent to the admin phone ending in <strong><%= String(phone || '').slice(-4) %></strong>.</p>
+    <% if (error) { %><div class="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 text-left"><%= error %></div><% } %>
+    <form method="POST" action="/admin/verify-otp" class="mt-6 space-y-4">
+      <input name="otp" inputmode="numeric" autocomplete="one-time-code" minlength="4" maxlength="8" required autofocus class="w-full rounded-xl border border-slate-300 p-4 text-center text-2xl tracking-[0.5em] outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100" placeholder="••••••">
+      <button class="w-full rounded-xl bg-violet-600 py-3 text-white font-semibold hover:bg-violet-700">Verify and open dashboard</button>
+    </form>
+    <a href="/admin/login" class="inline-block mt-5 text-sm font-semibold text-violet-600">Start login again</a>
+  </main>
+</body></html>
