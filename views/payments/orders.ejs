@@ -6,7 +6,7 @@
     <% if (!orders.length) { %><div class="py-16 text-center text-slate-500">No orders yet.</div><% } else { %>
     <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 text-left"><tr><th class="p-4">Order / item</th><th class="p-4">Customer</th><th class="p-4">Amount</th><th class="p-4">Status</th><th class="p-4">Created</th><th class="p-4">Refund</th></tr></thead>
     <tbody class="divide-y divide-slate-100"><% orders.forEach((order) => { const remaining = Number(order.order_amount) - Number(order.refunded_amount); %>
-      <tr class="align-top hover:bg-slate-50/60">
+      <tr id="order-<%= order.id %>" class="align-top hover:bg-slate-50/60 target:bg-violet-50 target:ring-2 target:ring-inset target:ring-violet-300">
         <td class="p-4"><p class="font-semibold text-slate-800"><%= order.item_name %></p><p class="text-xs text-slate-400 mt-1"><%= order.merchant_order_id %></p></td>
         <td class="p-4"><p class="font-medium"><%= order.customer_name %></p><p class="text-xs text-slate-500"><%= order.customer_phone %></p></td>
         <td class="p-4"><p class="font-semibold">₹<%= Number(order.order_amount).toFixed(2) %></p><% if (Number(order.refunded_amount)) { %><p class="text-xs text-amber-600">₹<%= Number(order.refunded_amount).toFixed(2) %> refunded</p><% } %></td>

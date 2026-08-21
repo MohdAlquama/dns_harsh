@@ -5,7 +5,7 @@ import {
     consumeAdminChallenge, createAdminChallenge, findAdminByPhone, findAdminChallenge,
     incrementAdminChallengeAttempts, invalidateAdminChallenges, revokeAdminSession, revokeAllAdminSessions
 } from "../models/adminModel.js";
-import { sendOtp, sendOtpWithApiKey, verifyOtp } from "../services/twoFactorService.js";
+import { OtpProviderError, sendOtp, sendOtpWithApiKey, verifyOtp } from "../services/twoFactorService.js";
 import {
     ADMIN_COOKIE, CHALLENGE_COOKIE, SETUP_COOKIE, clearAdminCookies, cookieOptions,
     hashAdminToken, issueAdminSession, parseCookies
@@ -49,7 +49,11 @@ const login = async (req, res) => {
         return await beginAdminOtp(req, res, admin);
     } catch (error) {
         console.error("Admin login error:", error);
-        return renderLogin(res, error.message || "Unable to start admin login", 500);
+        const status = error instanceof OtpProviderError ? 503 : 500;
+        const message = error instanceof OtpProviderError
+            ? error.message
+            : "Unable to start admin login";
+        return renderLogin(res, message, status);
     }
 };
 
@@ -74,7 +78,13 @@ const setupOtp = async (req, res) => {
         return await createOtpChallenge(res, admin, gateway.sessionId);
     } catch (error) {
         console.error("Initial OTP setup error:", error);
-        return res.status(500).render("admin_auth/otp_setup", { admin: req.admin, error: error.message || "Unable to configure OTP" });
+        const status = error instanceof OtpProviderError
+            ? (error.code === "OTP_PROVIDER_REJECTED" ? 400 : 503)
+            : 500;
+        const message = error instanceof OtpProviderError
+            ? error.message
+            : "Unable to configure OTP";
+        return res.status(status).render("admin_auth/otp_setup", { admin: req.admin, error: message });
     }
 };
 
@@ -87,8 +97,9 @@ const showVerifyOtp = async (req, res) => {
 
 const verifyAdminOtp = async (req, res) => {
     const token = parseCookies(req)[CHALLENGE_COOKIE];
+    let challenge = null;
     try {
-        const challenge = token ? await findAdminChallenge(hashAdminToken(token)) : null;
+        challenge = token ? await findAdminChallenge(hashAdminToken(token)) : null;
         if (!challenge) return res.redirect("/admin/login");
         if (challenge.attempts >= 5) {
             await consumeAdminChallenge(challenge.id);
@@ -108,7 +119,14 @@ const verifyAdminOtp = async (req, res) => {
         return res.redirect("/dashboard");
     } catch (error) {
         console.error("Admin OTP verification error:", error);
-        return res.status(500).render("admin_auth/verify_otp", { phone: "", error: error.message || "Unable to verify OTP" });
+        const status = error instanceof OtpProviderError ? 503 : 500;
+        const message = error instanceof OtpProviderError
+            ? error.message
+            : "Unable to verify OTP";
+        return res.status(status).render("admin_auth/verify_otp", {
+            phone: challenge?.phone_number || "",
+            error: message
+        });
     }
 };
 

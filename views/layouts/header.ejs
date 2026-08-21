@@ -1,91 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-   <!-- HEADER HTML -->
-<header class="sticky top-0 z-20 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 transition-all duration-300">
-  
-  <div class="flex items-center gap-3 flex-1">
-    <!-- Menu button (lg:hidden removed so it works on laptop too) -->
-    <button
-      onclick="toggleSidebar()"
-      class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition-all duration-200"
-    >
+<header class="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 transition-all duration-300">
+  <div class="flex items-center gap-3 flex-1 min-w-0">
+    <button type="button" onclick="toggleSidebar()" aria-label="Toggle navigation" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition">
       <i data-lucide="menu" class="w-5 h-5"></i>
     </button>
 
-    <div class="relative w-full max-w-md hidden sm:block">
-      <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-      <input
-        type="text"
-        placeholder="Search..."
-        class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-100 border border-transparent text-sm text-slate-700 placeholder-slate-400 focus:bg-white focus:border-violet-300 focus:ring-2 focus:ring-violet-100 outline-none transition-all duration-200"
-      />
+    <div id="desktopSearch" class="relative w-full max-w-xl hidden sm:block">
+      <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+      <input id="adminSearchInput" type="search" autocomplete="off" aria-label="Search admin panel" aria-controls="adminSearchDropdown" aria-expanded="false" placeholder="Search pages, courses, orders, customers…" class="w-full h-10 pl-10 pr-20 rounded-2xl bg-slate-100 border border-transparent text-sm text-slate-700 placeholder-slate-400 focus:bg-white focus:border-violet-300 focus:ring-4 focus:ring-violet-100 outline-none transition" />
+      <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:inline-flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-400 shadow-sm">Ctrl K</kbd>
+      <div id="adminSearchDropdown" class="hidden absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/50">
+        <div id="adminSearchResults" class="max-h-[min(65vh,32rem)] overflow-y-auto p-2"></div>
+        <div class="flex items-center justify-between border-t border-slate-100 px-3 py-2 text-[10px] text-slate-400">
+          <span>↑ ↓ Navigate &nbsp; Enter Open</span><span>Esc Close</span>
+        </div>
+      </div>
     </div>
-  </div>   
+  </div>
 
-  <!-- Right: Actions -->
   <div class="flex items-center gap-2 lg:gap-3">
-
-    <!-- Mobile Search Icon -->
-    <button class="sm:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition-all duration-200">
+    <button id="mobileSearchButton" type="button" aria-label="Open search" class="sm:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition">
       <i data-lucide="search" class="w-5 h-5"></i>
     </button>
 
-    <!-- Theme Toggle -->
-    <button
-      id="themeToggle"
-      class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition-all duration-200"
-    >
-      <i data-lucide="sun-moon" class="w-5 h-5"> </i>
-    </button>
-
-    <!-- Messages -->
-    <button class="relative w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition-all duration-200">
-      <i data-lucide="message-square" class="w-5 h-5"></i>
-      <span class="absolute top-2 right-2 w-2 h-2 bg-violet-600 rounded-full"></span>
-    </button>
-
-    <!-- Notifications -->
     <div class="relative">
-      <button
-        onclick="toggleDropdown('notifDropdown')"
-        class="relative w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition-all duration-200"
-      >
-        <i data-lucide="bell" class="w-5 h-5"></i>
-        <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-violet-600 text-white text-[10px] font-semibold rounded-full flex items-center justify-center">3</span>
+      <button type="button" onclick="toggleDropdown('headerHelpDropdown')" aria-label="Header shortcuts" class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition">
+        <i data-lucide="circle-help" class="w-5 h-5"></i>
       </button>
-
-      <div
-        id="notifDropdown"
-        class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-lg border border-slate-200 py-2 origin-top-right transition-all duration-200"
-      >
-        <div class="px-4 py-2 border-b border-slate-100">
-          <p class="text-sm font-semibold text-slate-800">Notifications</p>
+      <div id="headerHelpDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 origin-top-right">
+        <p class="text-sm font-semibold text-slate-800">Search shortcuts</p>
+        <div class="mt-3 space-y-2 text-xs text-slate-500">
+          <div class="flex justify-between"><span>Open search</span><kbd class="rounded border px-1.5 py-0.5">Ctrl K</kbd></div>
+          <div class="flex justify-between"><span>Move through results</span><kbd class="rounded border px-1.5 py-0.5">↑ ↓</kbd></div>
+          <div class="flex justify-between"><span>Close search</span><kbd class="rounded border px-1.5 py-0.5">Esc</kbd></div>
         </div>
-        <a href="#" class="block text-center text-sm text-violet-600 font-medium py-2 hover:bg-slate-50 transition-colors duration-150">
-          View all notifications
-        </a>
       </div>
     </div>
 
     <div class="w-px h-8 bg-slate-200 mx-1 hidden sm:block"></div>
 
-    <!-- Profile -->
     <div class="relative">
-      <button
-        onclick="toggleDropdown('profileDropdown')"
-        class="flex items-center gap-2 pl-1 pr-2 sm:pr-3 py-1 rounded-2xl hover:bg-slate-100 transition-all duration-200"
-      >
-        <img
-          src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(typeof admin !== 'undefined' ? admin.name : 'Admin') %>&background=7c3aed&color=fff"
-          alt="Profile"
-          class="w-9 h-9 rounded-xl object-cover"
-        />
+      <button type="button" onclick="toggleDropdown('profileDropdown')" class="flex items-center gap-2 pl-1 pr-2 sm:pr-3 py-1 rounded-2xl hover:bg-slate-100 transition">
+        <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(typeof admin !== 'undefined' ? admin.name : 'Admin') %>&background=7c3aed&color=fff" alt="Admin profile" class="w-9 h-9 rounded-xl object-cover" />
         <div class="hidden sm:block text-left">
           <p class="text-sm font-semibold text-slate-800 leading-tight"><%= typeof admin !== 'undefined' ? admin.name : 'Admin' %></p>
           <p class="text-xs text-slate-400 leading-tight"><%= typeof admin !== 'undefined' ? admin.role.replace('_', ' ') : 'Administrator' %></p>
@@ -93,21 +48,25 @@
         <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 hidden sm:block"></i>
       </button>
 
-      <div
-        id="profileDropdown"
-        class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-lg border border-slate-200 py-2 origin-top-right transition-all duration-200"
-      >
-        <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-violet-600 transition-colors duration-150">
-          <i data-lucide="user" class="w-4 h-4"></i>
-          <span>My Profile</span>
+      <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 origin-top-right">
+        <div class="px-4 py-2 border-b border-slate-100 sm:hidden">
+          <p class="text-sm font-semibold text-slate-800"><%= typeof admin !== 'undefined' ? admin.name : 'Admin' %></p>
+          <p class="text-xs text-slate-400"><%= typeof admin !== 'undefined' ? admin.role.replace('_', ' ') : 'Administrator' %></p>
+        </div>
+        <a href="/auth-settings" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition">
+          <i data-lucide="shield-check" class="w-4 h-4"></i><span>OTP Settings</span>
         </a>
-        <a href="/settings" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-violet-600 transition-colors duration-150">
-          <i data-lucide="settings" class="w-4 h-4"></i>
-          <span>Settings</span>
+        <a href="/social-media-settings" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition">
+          <i data-lucide="share-2" class="w-4 h-4"></i><span>Social Media</span>
         </a>
+        <% if (typeof admin !== 'undefined' && admin?.role === 'SUPER_ADMIN') { %>
+        <a href="/admins" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition">
+          <i data-lucide="user-cog" class="w-4 h-4"></i><span>Administrators</span>
+        </a>
+        <% } %>
         <div class="my-1 border-t border-slate-100"></div>
         <form method="POST" action="/admin/logout">
-          <button class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors duration-150">
+          <button class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition">
             <i data-lucide="log-out" class="w-4 h-4"></i><span>Logout</span>
           </button>
         </form>
@@ -115,21 +74,191 @@
     </div>
   </div>
 </header>
-  
+
+<div id="mobileSearchPanel" class="hidden fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-sm p-3 sm:hidden">
+  <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mt-2">
+    <div class="flex items-center gap-3 p-3 border-b border-slate-100">
+      <i data-lucide="search" class="w-5 h-5 text-slate-400 shrink-0"></i>
+      <input id="mobileAdminSearchInput" type="search" autocomplete="off" aria-label="Search admin panel" placeholder="Search the admin panel…" class="h-11 min-w-0 flex-1 text-sm outline-none" />
+      <button id="mobileSearchClose" type="button" aria-label="Close search" class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+    <div id="mobileAdminSearchResults" class="max-h-[70vh] overflow-y-auto p-2"></div>
+  </div>
+</div>
+
 <script>
-  // Dropdown Toggle Logic
+  (() => {
+    const desktopInput = document.getElementById('adminSearchInput');
+    const desktopDropdown = document.getElementById('adminSearchDropdown');
+    const desktopResults = document.getElementById('adminSearchResults');
+    const mobilePanel = document.getElementById('mobileSearchPanel');
+    const mobileInput = document.getElementById('mobileAdminSearchInput');
+    const mobileResults = document.getElementById('mobileAdminSearchResults');
+    let activeInput = desktopInput;
+    let activeContainer = desktopResults;
+    let selectedIndex = -1;
+    let debounceTimer = null;
+    let searchRequest = null;
+    const cache = new Map();
+
+    const openDesktop = () => {
+      desktopDropdown.classList.remove('hidden');
+      desktopInput.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeDesktop = () => {
+      desktopDropdown.classList.add('hidden');
+      desktopInput.setAttribute('aria-expanded', 'false');
+      selectedIndex = -1;
+    };
+
+    const openMobile = () => {
+      mobilePanel.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      activeInput = mobileInput;
+      activeContainer = mobileResults;
+      mobileInput.value = desktopInput.value;
+      setTimeout(() => mobileInput.focus(), 0);
+      runSearch(mobileInput.value);
+    };
+
+    const closeMobile = () => {
+      mobilePanel.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+      selectedIndex = -1;
+    };
+
+    const typeLabel = (type) => ({ PAGE: 'Page', COURSE: 'Course', DOCUMENT: 'PDF', ORDER: 'Order', SOCIAL: 'Social', ADMIN: 'Administrator' })[type] || type;
+
+    const createResult = (result, index) => {
+      const link = document.createElement('a');
+      link.href = result.url;
+      link.dataset.searchIndex = index;
+      link.className = 'admin-search-result flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-violet-50 focus:bg-violet-50 outline-none transition';
+
+      const iconBox = document.createElement('span');
+      iconBox.className = 'w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0';
+      const icon = document.createElement('i');
+      icon.setAttribute('data-lucide', result.icon || 'search');
+      icon.className = 'w-4 h-4';
+      iconBox.appendChild(icon);
+
+      const copy = document.createElement('span');
+      copy.className = 'min-w-0 flex-1';
+      const title = document.createElement('span');
+      title.className = 'block truncate text-sm font-semibold text-slate-800';
+      title.textContent = result.title;
+      const description = document.createElement('span');
+      description.className = 'block truncate text-xs text-slate-400 mt-0.5';
+      description.textContent = result.description;
+      copy.append(title, description);
+
+      const badge = document.createElement('span');
+      badge.className = 'shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500';
+      badge.textContent = typeLabel(result.type);
+      link.append(iconBox, copy, badge);
+      return link;
+    };
+
+    const renderResults = (results, container = activeContainer) => {
+      container.replaceChildren();
+      selectedIndex = -1;
+      if (!results.length) {
+        const empty = document.createElement('div');
+        empty.className = 'px-4 py-10 text-center';
+        empty.innerHTML = '<div class="w-11 h-11 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center"><i data-lucide="search-x" class="w-5 h-5 text-slate-400"></i></div><p class="mt-3 text-sm font-semibold text-slate-700">No results found</p><p class="mt-1 text-xs text-slate-400">Try a page name, course, order ID, customer, or account.</p>';
+        container.appendChild(empty);
+      } else {
+        results.forEach((result, index) => container.appendChild(createResult(result, index)));
+      }
+      lucide.createIcons();
+    };
+
+    const showLoading = () => {
+      activeContainer.innerHTML = '<div class="flex items-center justify-center gap-2 px-4 py-10 text-sm text-slate-400"><span class="w-4 h-4 rounded-full border-2 border-violet-200 border-t-violet-600 animate-spin"></span>Searching…</div>';
+    };
+
+    const runSearch = async (value) => {
+      const query = value.trim();
+      if (activeInput === desktopInput) openDesktop();
+      if (cache.has(query.toLowerCase())) {
+        renderResults(cache.get(query.toLowerCase()));
+        return;
+      }
+
+      searchRequest?.abort();
+      searchRequest = new AbortController();
+      showLoading();
+      try {
+        const response = await fetch(`/api/v1/admin/search?q=${encodeURIComponent(query)}`, { signal: searchRequest.signal });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Search failed');
+        cache.set(query.toLowerCase(), data.results);
+        renderResults(data.results);
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        renderResults([]);
+      }
+    };
+
+    const scheduleSearch = (input, container) => {
+      activeInput = input;
+      activeContainer = container;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => runSearch(input.value), 180);
+    };
+
+    const moveSelection = (direction) => {
+      const items = [...activeContainer.querySelectorAll('.admin-search-result')];
+      if (!items.length) return;
+      selectedIndex = (selectedIndex + direction + items.length) % items.length;
+      items.forEach((item, index) => item.classList.toggle('!bg-violet-100', index === selectedIndex));
+      items[selectedIndex].scrollIntoView({ block: 'nearest' });
+    };
+
+    const handleKeys = (event) => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        moveSelection(event.key === 'ArrowDown' ? 1 : -1);
+      } else if (event.key === 'Enter' && selectedIndex >= 0) {
+        event.preventDefault();
+        activeContainer.querySelector(`[data-search-index="${selectedIndex}"]`)?.click();
+      } else if (event.key === 'Escape') {
+        closeDesktop(); closeMobile(); activeInput.blur();
+      }
+    };
+
+    desktopInput.addEventListener('focus', () => { activeInput = desktopInput; activeContainer = desktopResults; runSearch(desktopInput.value); });
+    desktopInput.addEventListener('input', () => scheduleSearch(desktopInput, desktopResults));
+    desktopInput.addEventListener('keydown', handleKeys);
+    mobileInput.addEventListener('input', () => scheduleSearch(mobileInput, mobileResults));
+    mobileInput.addEventListener('keydown', handleKeys);
+    document.getElementById('mobileSearchButton').addEventListener('click', openMobile);
+    document.getElementById('mobileSearchClose').addEventListener('click', closeMobile);
+    mobilePanel.addEventListener('click', (event) => { if (event.target === mobilePanel) closeMobile(); });
+
+    document.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        if (window.innerWidth < 640) openMobile();
+        else { activeInput = desktopInput; activeContainer = desktopResults; desktopInput.focus(); }
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('#desktopSearch')) closeDesktop();
+      if (!event.target.closest('.relative')) {
+        document.querySelectorAll('[id$="Dropdown"]').forEach((dropdown) => {
+          if (dropdown.id !== 'adminSearchDropdown') dropdown.classList.add('hidden');
+        });
+      }
+    });
+  })();
+
   function toggleDropdown(id) {
     const dropdown = document.getElementById(id);
-    const isOpen = !dropdown.classList.contains('hidden');
-    document.querySelectorAll('[id$="Dropdown"]').forEach(el => el.classList.add('hidden'));
-    if (!isOpen) dropdown.classList.remove('hidden');
+    const shouldOpen = dropdown.classList.contains('hidden');
+    document.querySelectorAll('[id$="Dropdown"]').forEach((item) => item.classList.add('hidden'));
+    if (shouldOpen) dropdown.classList.remove('hidden');
   }
-
-  document.addEventListener('click', (e) => { 
-    if (!e.target.closest('.relative')) {
-      document.querySelectorAll('[id$="Dropdown"]').forEach(el => el.classList.add('hidden'));
-    }
-  });
 </script>
-</body>
-</html>

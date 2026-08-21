@@ -26,6 +26,9 @@ import createAdminTables from "./models/adminTables.js";
 import adminAuthRoutes from "./routes/adminAuthRoutes.js";
 import adminManagementRoutes from "./routes/adminManagementRoutes.js";
 import { requireAdmin } from "./middleware/adminAuth.js";
+import createSocialMediaTables from "./models/socialMediaTables.js";
+import socialMediaRoutes from "./routes/socialMediaRoutes.js";
+import adminSearchRoutes from "./routes/adminSearchRoutes.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -54,6 +57,7 @@ app.use("/api", apiCors);
 
 // Routes
 app.use("/admin", adminAuthRoutes);
+app.use("/", socialMediaRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/ads", adRoutes);
 app.use("/api/v1/current-affairs", currentAffairsApiRoutes);
@@ -62,6 +66,7 @@ app.get("/payment/return", showPaymentReturn);
 app.use('/dashboard', requireAdmin, getDashboard);
 app.use("/", requireAdmin, currentAffairsRoutes);
 app.use("/api/v1/auth-config", requireAdmin, authConfigRoutes);
+app.use("/api/v1/admin", requireAdmin, adminSearchRoutes);
 app.use("/", requireAdmin, paymentAdminRoutes);
 app.use("/", requireAdmin, adminManagementRoutes);
 app.get("/auth-settings", requireAdmin, showAuthSettings);
@@ -79,6 +84,7 @@ await createAdminTables();
 await createCurrentAffairsTables();
 await createAdTables();
 await createPaymentTables();
+await createSocialMediaTables();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
