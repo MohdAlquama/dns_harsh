@@ -137,10 +137,23 @@ GET /api/v1/current-affairs?page=1&limit=20
 ```
 
 Only `PUBLISHED` or `COMING_SOON` courses that have not ended are returned.
-The response contains nested pricing, offers, active notifications, and active
-documents. Paid document URLs stay locked in this public response. Login and use
-the purchase flow in [CASHFREE_PAYMENT_API.md](./CASHFREE_PAYMENT_API.md) to buy
-an item and retrieve its unlocked documents.
+Use the returned `detailEndpoint` when a user opens a product:
+
+```http
+GET /api/v1/current-affairs/{id}
+```
+
+The catalog response contains compact pricing and preview data. The detail
+response additionally contains all admin-enabled conversion sections. Paid
+document URLs stay locked in public responses. The complete module schemas,
+frontend renderer, catalog-to-detail flow, and purchase examples are documented
+in [CURRENT_AFFAIRS_PRODUCT_API.md](./CURRENT_AFFAIRS_PRODUCT_API.md). Login and
+use [CASHFREE_PAYMENT_API.md](./CASHFREE_PAYMENT_API.md) to buy an item and
+retrieve its unlocked documents.
+
+Product rationale, safe generic frontend calls, operational guidance, and the
+enterprise rollout plan are in
+[CURRENT_AFFAIRS_ENTERPRISE_API.md](./CURRENT_AFFAIRS_ENTERPRISE_API.md).
 
 ## Mobile example (React Native)
 

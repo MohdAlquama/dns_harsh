@@ -112,6 +112,27 @@ const createCurrentAffairsTables = async () => {
             ) ENGINE=InnoDB
         `);
 
+        // Flexible sales/detail-page blocks. Keeping content in a validated JSON
+        // payload lets web and mobile clients share one contract without adding a
+        // new table every time a merchandising block is introduced.
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS current_affairs_modules (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                course_id INT UNSIGNED NOT NULL,
+                module_key VARCHAR(50) NOT NULL,
+                is_enabled TINYINT(1) NOT NULL DEFAULT 0,
+                sort_order SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+                content_json JSON NOT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_ca_module_course_key (course_id, module_key),
+                INDEX idx_ca_module_delivery (course_id, is_enabled, sort_order),
+                CONSTRAINT fk_ca_module_course
+                    FOREIGN KEY (course_id) REFERENCES current_affairs_courses(id)
+                    ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE=InnoDB
+        `);
+
         console.log("✅ Current Affairs relational tables ready");
     } catch (error) {
         console.error("❌ Current Affairs table creation failed");

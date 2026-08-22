@@ -130,6 +130,150 @@
         </section>
 
 
+        <!-- Admin-controlled detail/sales page modules -->
+        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+            <div class="border-b border-gray-100 pb-4 mb-5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-purple-500">Conversion builder</p>
+                <h2 class="text-lg font-semibold text-purple-800 mt-1">2. Detail Page Sections</h2>
+                <p class="text-xs text-gray-500 mt-1">Only enabled sections are sent to the website or app API. One item per line where requested.</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">Key benefits</p><p class="text-xs text-gray-500">Quick, scannable reasons to buy.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="highlights_enabled" data-module-toggle="highlights_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="highlights_fields" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input name="highlights_heading" maxlength="120" placeholder="Why learners choose this pack" class="rounded border border-gray-300 p-2 text-sm">
+                        <textarea name="highlights_items" rows="4" placeholder="Daily exam-ready analysis&#10;Weekly revision capsule&#10;Monthly PDF magazine" class="rounded border border-gray-300 p-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">Exam, language & delivery coverage</p><p class="text-xs text-gray-500">Makes product fit immediately clear.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="coverage_enabled" data-module-toggle="coverage_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="coverage_fields" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input name="coverage_heading" maxlength="120" placeholder="Made for your exam" class="rounded border border-gray-300 p-2 text-sm">
+                        <input name="coverage_frequency" maxlength="120" placeholder="Daily updates + weekly and monthly revision" class="rounded border border-gray-300 p-2 text-sm">
+                        <textarea name="coverage_exams" rows="4" placeholder="UPSC&#10;SSC CGL&#10;Banking&#10;Railways" class="rounded border border-gray-300 p-2 text-sm"></textarea>
+                        <textarea name="coverage_subjects" rows="4" placeholder="Polity & Governance&#10;Economy&#10;Science & Technology&#10;International Relations" class="rounded border border-gray-300 p-2 text-sm"></textarea>
+                        <textarea name="coverage_languages" rows="4" placeholder="Hindi&#10;English" class="rounded border border-gray-300 p-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">What learners receive</p><p class="text-xs text-gray-500">Make every deliverable and release frequency concrete.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="deliverables_enabled" data-module-toggle="deliverables_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="deliverables_fields" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input name="deliverables_heading" maxlength="120" placeholder="Everything included in your pack" class="rounded border border-gray-300 p-2 text-sm">
+                        <div class="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 text-xs text-blue-700">One per line: <strong>Title | Description | Frequency</strong></div>
+                        <textarea name="deliverables_items" rows="6" placeholder="Daily News Brief | Exam-ready news in simple language | Daily&#10;Current Affairs Quiz | MCQs with explanations | Daily&#10;Monthly Magazine | Complete revision PDF | Monthly" class="md:col-span-2 rounded border border-gray-300 p-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">Free sample preview</p><p class="text-xs text-gray-500">Reduce purchase uncertainty with a safe preview link.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="preview_enabled" data-module-toggle="preview_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="preview_fields" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input name="preview_heading" maxlength="120" placeholder="See what you will receive" class="rounded border border-gray-300 p-2 text-sm">
+                        <input type="url" name="preview_url" placeholder="https://.../free-sample" class="rounded border border-gray-300 p-2 text-sm">
+                        <textarea name="preview_description" maxlength="800" rows="3" placeholder="Explain what is included in the sample." class="rounded border border-gray-300 p-2 text-sm"></textarea>
+                        <input name="preview_cta_label" maxlength="60" placeholder="View free sample" class="rounded border border-gray-300 p-2 text-sm">
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">Smart revision system</p><p class="text-xs text-gray-500">Sell an outcome and routine, not only files.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="revision_enabled" data-module-toggle="revision_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="revision_fields" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input name="revision_heading" maxlength="120" placeholder="Revise in 15 minutes a day" class="rounded border border-gray-300 p-2 text-sm">
+                        <input type="number" name="revision_minutes" min="0" max="240" placeholder="Minutes per day" class="rounded border border-gray-300 p-2 text-sm">
+                        <textarea name="revision_description" maxlength="800" rows="3" placeholder="Describe the revision workflow." class="rounded border border-gray-300 p-2 text-sm"></textarea>
+                        <textarea name="revision_features" rows="4" placeholder="Daily quiz&#10;Bookmark weak topics&#10;7-day recap&#10;Monthly mock" class="rounded border border-gray-300 p-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">Trust & editorial quality</p><p class="text-xs text-gray-500">Show who verifies content and how fresh it is.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="trust_enabled" data-module-toggle="trust_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="trust_fields" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input name="trust_heading" maxlength="120" placeholder="Verified by subject experts" class="rounded border border-gray-300 p-2 text-sm">
+                        <input name="trust_expert_name" maxlength="120" placeholder="Editor or faculty name" class="rounded border border-gray-300 p-2 text-sm">
+                        <textarea name="trust_source_policy" maxlength="800" rows="3" placeholder="Example: Facts are checked against PIB and official sources." class="rounded border border-gray-300 p-2 text-sm"></textarea>
+                        <div class="space-y-3"><input name="trust_update_promise" maxlength="240" placeholder="Updated every day by 7 AM" class="w-full rounded border border-gray-300 p-2 text-sm"><input name="trust_guarantee_text" maxlength="240" placeholder="Refund/access assurance (only if true)" class="w-full rounded border border-gray-300 p-2 text-sm"></div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">Practice & assessment</p><p class="text-xs text-gray-500">Show measurable practice volume and learning feedback.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="practice_enabled" data-module-toggle="practice_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="practice_fields" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <input name="practice_heading" maxlength="120" placeholder="Practice that improves recall" class="rounded border border-gray-300 p-2 text-sm lg:col-span-2">
+                        <input type="number" name="practice_daily_mcqs" min="0" max="10000" placeholder="Daily MCQs" class="rounded border border-gray-300 p-2 text-sm">
+                        <input type="number" name="practice_mock_tests" min="0" max="10000" placeholder="Total mock tests" class="rounded border border-gray-300 p-2 text-sm">
+                        <label class="rounded-lg border border-gray-200 p-3 text-sm flex items-center gap-2"><input type="checkbox" name="practice_answer_writing" class="accent-purple-600"> Mains answer writing</label>
+                        <label class="rounded-lg border border-gray-200 p-3 text-sm flex items-center gap-2"><input type="checkbox" name="practice_analytics" class="accent-purple-600"> Performance analytics</label>
+                        <textarea name="practice_description" maxlength="800" rows="3" placeholder="Explain quizzes, solutions, weak-topic tracking, or test pattern." class="rounded border border-gray-300 p-2 text-sm lg:col-span-2"></textarea>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">Faculty & doubt support</p><p class="text-xs text-gray-500">Explain the human support included with the product.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="mentor_enabled" data-module-toggle="mentor_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="mentor_fields" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input name="mentor_heading" maxlength="120" placeholder="Learn with expert guidance" class="rounded border border-gray-300 p-2 text-sm">
+                        <input name="mentor_faculty_name" maxlength="120" placeholder="Faculty / editorial team name" class="rounded border border-gray-300 p-2 text-sm">
+                        <input name="mentor_experience" maxlength="160" placeholder="Example: 10+ years in competitive exams" class="rounded border border-gray-300 p-2 text-sm">
+                        <input name="mentor_support_mode" maxlength="240" placeholder="Example: Weekly live doubt session + Telegram support" class="rounded border border-gray-300 p-2 text-sm">
+                        <textarea name="mentor_description" maxlength="800" rows="3" placeholder="Describe response time, doubt channels and what support covers." class="md:col-span-2 rounded border border-gray-300 p-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">FAQ</p><p class="text-xs text-gray-500">Add up to 20 separate question-and-answer blocks.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="faq_enabled" data-module-toggle="faq_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="faq_fields" class="hidden mt-4 space-y-4">
+                        <input name="faq_heading" maxlength="120" placeholder="Frequently asked questions" class="w-full rounded border border-gray-300 p-2 text-sm">
+                        <div id="faq_rows" class="space-y-3"></div>
+                        <button type="button" id="add_faq_button" onclick="addFaqRow()" class="inline-flex items-center gap-2 rounded-lg border border-purple-200 px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-50">
+                            + Add another FAQ
+                        </button>
+                        <p class="text-xs text-gray-500">Each enabled FAQ must contain both fields. Maximum 20 FAQs.</p>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div><p class="font-semibold text-gray-800">Purchase call-to-action</p><p class="text-xs text-gray-500">Control the final buy panel copy from admin.</p></div>
+                        <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="cta_enabled" data-module-toggle="cta_fields" class="h-4 w-4 accent-purple-600"> Enable</label>
+                    </div>
+                    <div id="cta_fields" class="hidden mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input name="cta_label" maxlength="60" placeholder="Start preparation" class="rounded border border-gray-300 p-2 text-sm">
+                        <input name="cta_subtext" maxlength="240" placeholder="Instant access after payment" class="rounded border border-gray-300 p-2 text-sm">
+                        <input name="cta_urgency_text" maxlength="160" placeholder="Offer ends Sunday (avoid fake urgency)" class="rounded border border-gray-300 p-2 text-sm">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
         <!-- ===================================================== -->
         <!-- 3. PRICING -->
         <!-- ===================================================== -->
@@ -1328,6 +1472,38 @@
 
     }
 
+    function addFaqRow(question = "", answer = "") {
+        const container = document.getElementById("faq_rows");
+        if (!container || container.children.length >= 20) return;
+
+        const row = document.createElement("div");
+        row.className = "grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3";
+
+        const questionInput = document.createElement("input");
+        questionInput.name = "faq_question[]";
+        questionInput.maxLength = 220;
+        questionInput.placeholder = "Question";
+        questionInput.className = "rounded border border-gray-300 bg-white p-2 text-sm";
+        questionInput.value = question;
+
+        const answerInput = document.createElement("textarea");
+        answerInput.name = "faq_answer[]";
+        answerInput.maxLength = 1000;
+        answerInput.rows = 2;
+        answerInput.placeholder = "Answer";
+        answerInput.className = "rounded border border-gray-300 bg-white p-2 text-sm";
+        answerInput.value = answer;
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.textContent = "Remove";
+        removeButton.className = "self-start rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50";
+        removeButton.addEventListener("click", () => row.remove());
+
+        row.append(questionInput, answerInput, removeButton);
+        container.append(row);
+    }
+
     const initialFormData = <%- JSON.stringify(typeof formData !== 'undefined' ? formData : {}).replace(/</g, '\\u003c') %>;
 
     Object.entries(initialFormData).forEach(([name, rawValue]) => {
@@ -1342,6 +1518,36 @@
                 field.value = rawValue;
             }
         });
+    });
+
+    const initialQuestions = Array.isArray(initialFormData.faq_question)
+        ? initialFormData.faq_question
+        : (initialFormData.faq_question === undefined ? [] : [initialFormData.faq_question]);
+    const initialAnswers = Array.isArray(initialFormData.faq_answer)
+        ? initialFormData.faq_answer
+        : (initialFormData.faq_answer === undefined ? [] : [initialFormData.faq_answer]);
+
+    if (initialQuestions.length || initialAnswers.length) {
+        Array.from({ length: Math.max(initialQuestions.length, initialAnswers.length) }, (_, index) => {
+            addFaqRow(initialQuestions[index] || "", initialAnswers[index] || "");
+        });
+    } else if (typeof initialFormData.faq_items === "string" && initialFormData.faq_items.trim()) {
+        initialFormData.faq_items.split(/\r?\n/).forEach((line) => {
+            const separator = line.indexOf("|");
+            addFaqRow(
+                separator >= 0 ? line.slice(0, separator).trim() : line.trim(),
+                separator >= 0 ? line.slice(separator + 1).trim() : ""
+            );
+        });
+    } else {
+        addFaqRow();
+    }
+
+    document.querySelectorAll("[data-module-toggle]").forEach((toggle) => {
+        const fields = document.getElementById(toggle.dataset.moduleToggle);
+        const syncModule = () => fields?.classList.toggle("hidden", !toggle.checked);
+        toggle.addEventListener("change", syncModule);
+        syncModule();
     });
 
     togglePricingField("gst_toggle", "gst_field");
