@@ -1,0 +1,50 @@
+<% const f = formData || {}; const isTest = type === 'TEST_SERIES'; const value = (key, fallback = '') => f[key] ?? fallback; %>
+<div class="max-w-5xl mx-auto space-y-6">
+  <div class="flex items-center gap-3"><a href="<%= config.basePath %>" class="rounded-xl border border-slate-300 p-2 text-slate-500 hover:bg-white"><i data-lucide="arrow-left" class="h-5 w-5"></i></a><div><p class="text-sm font-semibold text-violet-600">Catalog management</p><h1 class="text-2xl font-bold text-slate-900"><%= productId ? 'Edit' : 'New' %> <%= config.label %></h1></div></div>
+  <% if (error) { %><div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><%= error %></div><% } %>
+
+  <form method="POST" action="<%= productId ? `${config.basePath}/${productId}/edit` : config.basePath %>" class="space-y-6">
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="font-bold text-slate-900">Basic information</h2><div class="mt-4 grid gap-4 md:grid-cols-2">
+      <label class="text-sm font-medium">Title<input name="title" required maxlength="200" value="<%= value('title') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Slug <span class="font-normal text-slate-400">(generated from title if blank)</span><input name="slug" maxlength="220" value="<%= value('slug') %>" placeholder="product-url-slug" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="md:col-span-2 text-sm font-medium">Short description<textarea name="short_description" maxlength="500" rows="2" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><%= value('short_description') %></textarea></label>
+      <label class="md:col-span-2 text-sm font-medium">Long description<textarea name="long_description" rows="5" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><%= value('long_description') %></textarea></label>
+      <label class="md:col-span-2 text-sm font-medium">Cover image URL<input name="cover_image_url" value="<%= value('cover_image_url') %>" placeholder="https://… or /uploads/…" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Status<select name="status" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><% ['DRAFT','PUBLISHED','COMING_SOON'].forEach((status) => { %><option value="<%= status %>" <%= value('status','DRAFT') === status ? 'selected' : '' %>><%= status.replaceAll('_',' ') %></option><% }) %></select></label>
+    </div></section>
+
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="font-bold text-slate-900">Pricing</h2><div class="mt-4 grid gap-4 md:grid-cols-3">
+      <label class="text-sm font-medium">Base price ₹<input type="number" name="base_price" min="0" step="0.01" required value="<%= value('base_price', 0) %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">GST %<input type="number" name="gst_percent" min="0" max="100" step="0.01" value="<%= value('gst_percent') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><span class="mt-2 flex items-center gap-2 font-normal"><input type="checkbox" name="gst_enabled" <%= value('gst_enabled') ? 'checked' : '' %>> Enable GST</span></label>
+      <label class="text-sm font-medium">Platform charge ₹<input type="number" name="platform_charge" min="0" step="0.01" value="<%= value('platform_charge') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><span class="mt-2 flex items-center gap-2 font-normal"><input type="checkbox" name="platform_charge_enabled" <%= value('platform_charge_enabled') ? 'checked' : '' %>> Enable charge</span></label>
+    </div></section>
+
+    <% if (isTest) { %><section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="font-bold text-slate-900">Test Series configuration</h2><div class="mt-4 grid gap-4 md:grid-cols-3">
+      <label class="text-sm font-medium">Mode<select name="test_mode" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><% ['MOCK','PRACTICE','LIVE'].forEach((mode) => { %><option <%= value('test_mode','MOCK') === mode ? 'selected' : '' %>><%= mode %></option><% }) %></select></label>
+      <label class="text-sm font-medium">Duration (minutes)<input type="number" name="duration_minutes" min="1" max="1440" required value="<%= value('duration_minutes') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Questions<input type="number" name="total_questions" min="1" required value="<%= value('total_questions') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Total marks<input type="number" name="total_marks" min="0.01" step="0.01" required value="<%= value('total_marks') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Negative marks<input type="number" name="negative_marks" min="0" step="0.01" value="<%= value('negative_marks', 0) %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Attempt limit<input type="number" name="attempt_limit" min="1" required value="<%= value('attempt_limit', 1) %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Available from<input type="datetime-local" name="availability_start" value="<%= value('availability_start') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Available until<input type="datetime-local" name="availability_end" value="<%= value('availability_end') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="md:col-span-3 text-sm font-medium">Languages <span class="font-normal text-slate-400">(one per line)</span><textarea name="languages" rows="3" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><%= value('languages') %></textarea></label>
+      <label class="md:col-span-3 text-sm font-medium">Syllabus <span class="font-normal text-slate-400">(one topic per line)</span><textarea name="syllabus" rows="5" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><%= value('syllabus') %></textarea></label>
+      <label class="md:col-span-3 text-sm font-medium">Instructions<textarea name="instructions" rows="5" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><%= value('instructions') %></textarea></label>
+    </div></section><% } else { %><section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="font-bold text-slate-900">Book details</h2><div class="mt-4 grid gap-4 md:grid-cols-2">
+      <label class="text-sm font-medium">Author<input name="author" required maxlength="200" value="<%= value('author') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Publisher<input name="publisher" maxlength="200" value="<%= value('publisher') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">ISBN<input name="isbn" maxlength="20" value="<%= value('isbn') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">SKU<input name="sku" maxlength="80" value="<%= value('sku') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Language<input name="language" required maxlength="80" value="<%= value('language') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Edition<input name="edition" maxlength="100" value="<%= value('edition') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Pages<input type="number" name="page_count" min="1" value="<%= value('page_count') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Format<select name="book_format" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><% ['PHYSICAL','DIGITAL','BOTH'].forEach((format) => { %><option <%= value('book_format','PHYSICAL') === format ? 'selected' : '' %>><%= format %></option><% }) %></select></label>
+      <label class="text-sm font-medium">Physical stock<input type="number" name="stock_quantity" min="0" value="<%= value('stock_quantity', 0) %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="text-sm font-medium">Sample URL<input name="sample_url" value="<%= value('sample_url') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      <label class="md:col-span-2 text-sm font-medium">Protected digital asset URL<input name="digital_asset_url" value="<%= value('digital_asset_url') %>" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><span class="mt-1 block font-normal text-slate-400">Stored for delivery integration and never exposed by the public catalog API.</span></label>
+    </div></section><% } %>
+
+    <div class="flex justify-end gap-3"><a href="<%= config.basePath %>" class="rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-600">Cancel</a><button class="rounded-xl bg-violet-600 px-6 py-3 font-semibold text-white hover:bg-violet-700"><%= productId ? 'Save changes' : `Create ${config.label}` %></button></div>
+  </form>
+</div>

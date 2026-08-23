@@ -1,4 +1,5 @@
 import db from "../config/db.js";
+import { lockOfferForRedemption } from "./offerCodeModel.js";
 
 const getPaymentConfig = async () => {
     const [rows] = await db.execute(`SELECT * FROM payment_gateway_config WHERE id = 1`);
@@ -16,15 +17,37 @@ const savePaymentConfig = async (data) => {
 };
 
 const createLocalOrder = async (data) => {
-    const [result] = await db.execute(
-        `INSERT INTO payment_orders
-         (merchant_order_id, user_id, item_type, item_id, item_name, base_amount,
-          discount_amount, gst_amount, platform_amount, order_amount)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [data.merchantOrderId, data.userId, data.itemType, data.itemId, data.itemName,
-            data.baseAmount, data.discountAmount, data.gstAmount, data.platformAmount, data.orderAmount]
-    );
-    return result.insertId;
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        if (data.offer) {
+            await lockOfferForRedemption(connection, {
+                offerId: data.offer.id, userId: data.userId, courseId: data.itemId,
+                subtotal: data.baseAmount
+            });
+        }
+        const [result] = await connection.execute(
+            `INSERT INTO payment_orders
+             (merchant_order_id, user_id, item_type, item_id, item_name, base_amount,
+              discount_amount, gst_amount, platform_amount, order_amount)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [data.merchantOrderId, data.userId, data.itemType, data.itemId, data.itemName,
+                data.baseAmount, data.discountAmount, data.gstAmount, data.platformAmount, data.orderAmount]
+        );
+        if (data.offer) {
+            await connection.execute(
+                `INSERT INTO payment_offer_redemptions (offer_code_id, order_id, user_id)
+                 VALUES (?, ?, ?)`, [data.offer.id, result.insertId, data.userId]
+            );
+        }
+        await connection.commit();
+        return result.insertId;
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
 };
 
 const activateLocalOrder = async (merchantOrderId, cashfree) => db.execute(
@@ -33,15 +56,33 @@ const activateLocalOrder = async (merchantOrderId, cashfree) => db.execute(
     [cashfree.cf_order_id || null, cashfree.payment_session_id, merchantOrderId]
 );
 
-const failLocalOrder = async (merchantOrderId, message) => db.execute(
-    `UPDATE payment_orders SET status = 'FAILED', failure_message = ? WHERE merchant_order_id = ?`,
-    [String(message).slice(0, 1000), merchantOrderId]
-);
+const failLocalOrder = async (merchantOrderId, message) => {
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [orders] = await connection.execute(`SELECT id FROM payment_orders WHERE merchant_order_id = ? FOR UPDATE`, [merchantOrderId]);
+        await connection.execute(
+            `UPDATE payment_orders SET status = 'FAILED', failure_message = ? WHERE merchant_order_id = ?`,
+            [String(message).slice(0, 1000), merchantOrderId]
+        );
+        if (orders[0]) await connection.execute(
+            `UPDATE payment_offer_redemptions SET status = 'RELEASED' WHERE order_id = ? AND status = 'RESERVED'`, [orders[0].id]
+        );
+        await connection.commit();
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
 
 const getOrderByMerchantId = async (merchantOrderId) => {
     const [rows] = await db.execute(
-        `SELECT o.*, u.name AS customer_name, u.phone_number AS customer_phone
+        `SELECT o.*, u.name AS customer_name, u.phone_number AS customer_phone, oc.code AS offer_code
          FROM payment_orders o INNER JOIN auth_users u ON u.id = o.user_id
+         LEFT JOIN payment_offer_redemptions r ON r.order_id = o.id
+         LEFT JOIN payment_offer_codes oc ON oc.id = r.offer_code_id
          WHERE o.merchant_order_id = ? LIMIT 1`, [merchantOrderId]
     );
     return rows[0] || null;
@@ -49,8 +90,11 @@ const getOrderByMerchantId = async (merchantOrderId) => {
 
 const getOrderById = async (id) => {
     const [rows] = await db.execute(
-        `SELECT o.*, u.name AS customer_name, u.phone_number AS customer_phone
-         FROM payment_orders o INNER JOIN auth_users u ON u.id = o.user_id WHERE o.id = ? LIMIT 1`, [id]
+        `SELECT o.*, u.name AS customer_name, u.phone_number AS customer_phone, oc.code AS offer_code
+         FROM payment_orders o INNER JOIN auth_users u ON u.id = o.user_id
+         LEFT JOIN payment_offer_redemptions r ON r.order_id = o.id
+         LEFT JOIN payment_offer_codes oc ON oc.id = r.offer_code_id
+         WHERE o.id = ? LIMIT 1`, [id]
     );
     return rows[0] || null;
 };
@@ -64,14 +108,35 @@ const findOwnedPaidItem = async (userId, itemType, itemId) => {
     return rows[0] || null;
 };
 
-const markOrderFromGateway = async (merchantOrderId, update) => db.execute(
-    `UPDATE payment_orders SET status = ?, cashfree_payment_id = COALESCE(?, cashfree_payment_id),
-     payment_method = COALESCE(?, payment_method), failure_message = ?,
-     paid_at = CASE WHEN ? = 'PAID' THEN COALESCE(paid_at, NOW()) ELSE paid_at END
-     WHERE merchant_order_id = ?`,
-    [update.status, update.paymentId || null, update.paymentMethod || null,
-        update.failureMessage || null, update.status, merchantOrderId]
-);
+const markOrderFromGateway = async (merchantOrderId, update) => {
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [orders] = await connection.execute(`SELECT id FROM payment_orders WHERE merchant_order_id = ? FOR UPDATE`, [merchantOrderId]);
+        await connection.execute(
+            `UPDATE payment_orders SET status = ?, cashfree_payment_id = COALESCE(?, cashfree_payment_id),
+             payment_method = COALESCE(?, payment_method), failure_message = ?,
+             paid_at = CASE WHEN ? = 'PAID' THEN COALESCE(paid_at, NOW()) ELSE paid_at END
+             WHERE merchant_order_id = ?`,
+            [update.status, update.paymentId || null, update.paymentMethod || null,
+                update.failureMessage || null, update.status, merchantOrderId]
+        );
+        if (orders[0]) {
+            if (update.status === "PAID") await connection.execute(
+                `UPDATE payment_offer_redemptions SET status = 'REDEEMED' WHERE order_id = ? AND status = 'RESERVED'`, [orders[0].id]
+            );
+            if (["FAILED", "EXPIRED", "USER_DROPPED"].includes(update.status)) await connection.execute(
+                `UPDATE payment_offer_redemptions SET status = 'RELEASED' WHERE order_id = ? AND status = 'RESERVED'`, [orders[0].id]
+            );
+        }
+        await connection.commit();
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
 
 const listUserOrders = async (userId) => {
     const [rows] = await db.execute(
@@ -126,8 +191,11 @@ const getDocumentPricingByPath = async (filePath) => {
 
 const listAdminOrders = async () => {
     const [rows] = await db.execute(
-        `SELECT o.*, u.name AS customer_name, u.phone_number AS customer_phone
-         FROM payment_orders o INNER JOIN auth_users u ON u.id = o.user_id ORDER BY o.id DESC LIMIT 500`
+        `SELECT o.*, u.name AS customer_name, u.phone_number AS customer_phone, oc.code AS offer_code
+         FROM payment_orders o INNER JOIN auth_users u ON u.id = o.user_id
+         LEFT JOIN payment_offer_redemptions r ON r.order_id = o.id
+         LEFT JOIN payment_offer_codes oc ON oc.id = r.offer_code_id
+         ORDER BY o.id DESC LIMIT 500`
     );
     return rows;
 };

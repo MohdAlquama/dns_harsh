@@ -3,10 +3,16 @@ import searchAdminData from "../models/adminSearchModel.js";
 const PAGE_INDEX = [
     { title: "Dashboard", description: "Admin overview and statistics", url: "/dashboard", icon: "layout-dashboard", keywords: "home overview analytics stats" },
     { title: "Current Affairs", description: "Manage courses, PDFs, ads and offers", url: "/current-affairs", icon: "newspaper", keywords: "course pdf document notification advertisement" },
+    { title: "Test Series", description: "Create and publish exam test series", url: "/test-series", icon: "file-check-2", keywords: "mock practice live exam questions" },
+    { title: "New Test Series", description: "Create a test-series product", url: "/test-series/new", icon: "file-plus", keywords: "add create mock test" },
+    { title: "Books", description: "Create and publish physical or digital books", url: "/books", icon: "library", keywords: "book isbn author inventory digital physical" },
+    { title: "New Book", description: "Create a book product", url: "/books/new", icon: "book-plus", keywords: "add create book" },
     { title: "New Current Affairs Course", description: "Create a current-affairs course", url: "/current-affairs/new", icon: "plus-circle", keywords: "add create course" },
     { title: "Orders & Refunds", description: "Find payments, customers and refunds", url: "/orders", icon: "receipt-text", keywords: "payment cashfree customer purchase refund" },
+    { title: "Offer Codes", description: "Create checkout coupon policies", url: "/offer-codes", icon: "badge-percent", keywords: "coupon promo discount checkout policy" },
     { title: "Cashfree Settings", description: "Configure the payment gateway", url: "/payment-settings", icon: "credit-card", keywords: "payment gateway API sandbox production" },
     { title: "OTP Settings", description: "View 2Factor OTP configuration", url: "/auth-settings", icon: "shield-check", keywords: "2factor sms login authentication" },
+    { title: "Users", description: "Browse registered website users", url: "/users", icon: "users", keywords: "accounts customers login registered phone" },
     { title: "Social Media", description: "Configure YouTube, Instagram, Facebook and X", url: "/social-media-settings", icon: "share-2", keywords: "youtube instagram facebook twitter x links" }
 ];
 

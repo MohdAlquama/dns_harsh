@@ -39,7 +39,45 @@ total            = discounted price + GST + platform charge
 
 Money is rounded to two decimal places. Cashfree requires an order amount of at least ₹1. Paid documents are locked in the public catalog and are returned only from the authenticated purchase-history endpoint after a successful payment.
 
-## 3. Create a payment order
+Offer codes are also calculated only by the server. An offer policy can be global or course-specific and can enforce active dates, a minimum order amount, a maximum discount, a global usage limit, and a per-user usage limit. By default an offer code replaces the course's automatic offer; an administrator can explicitly allow stacking.
+
+## 3. Validate an offer code
+
+The checkout UI can preview a code before creating a Cashfree order:
+
+```http
+POST /api/v1/payments/offers/validate
+Authorization: Bearer ACCESS_TOKEN
+Content-Type: application/json
+
+{
+  "currentAffairsId": 12,
+  "offerCode": "WELCOME20"
+}
+```
+
+Successful response:
+
+```json
+{
+  "success": true,
+  "offer": { "code": "WELCOME20", "name": "New user welcome offer" },
+  "priceBreakdown": {
+    "base": 100,
+    "courseDiscount": 0,
+    "offerCodeDiscount": 20,
+    "discount": 20,
+    "gst": 14.4,
+    "platform": 0,
+    "total": 94.4,
+    "offerCode": "WELCOME20"
+  }
+}
+```
+
+Validation is only a preview. Eligibility and usage limits are checked again atomically while the order is created. Typical error codes are `OFFER_INVALID`, `OFFER_EXPIRED`, `OFFER_LIMIT_REACHED`, and `OFFER_USER_LIMIT_REACHED`.
+
+## 4. Create a payment order
 
 Login first with `POST /api/v1/auth/login`, then send its access token:
 
@@ -48,7 +86,7 @@ POST /api/v1/payments/orders
 Authorization: Bearer ACCESS_TOKEN
 Content-Type: application/json
 
-{"currentAffairsId": 12}
+{"currentAffairsId": 12, "offerCode": "WELCOME20"}
 ```
 
 Response:
@@ -77,7 +115,9 @@ Response:
 
 Only `PUBLISHED` items can be purchased. A user cannot buy the same currently-owned item twice.
 
-## 4. Open Cashfree checkout
+Omit `offerCode` for a normal checkout. Never send a client-calculated amount. The server verifies the policy again, reserves one use, stores the verified discount, and sends only the final server-calculated amount to Cashfree.
+
+## 5. Open Cashfree checkout
 
 Use the returned session ID with Cashfree's client SDK. Example for a website:
 
@@ -94,7 +134,7 @@ Use the returned session ID with Cashfree's client SDK. Example for a website:
 
 Do not unlock content from the checkout's client response. The server validates the signed webhook and also checks the order directly with Cashfree when an active order is fetched.
 
-## 5. Verify an order and show purchases
+## 6. Verify an order and show purchases
 
 ```http
 GET /api/v1/payments/orders/dns_1787200000000_1a2b3c4d5e
@@ -110,7 +150,7 @@ Authorization: Bearer ACCESS_TOKEN
 
 This returns the signed-in user's successfully purchased items, status, amount, image, and ownership-checked document API URLs. Send the same Bearer token when downloading a document. Direct static access to a paid PDF is blocked. Fully refunded items are removed from this list; partially refunded items remain available.
 
-## 6. Webhook security
+## 7. Webhook security
 
 Cashfree sends events to:
 
@@ -120,7 +160,23 @@ POST /api/v1/payments/webhook
 
 The implementation captures the exact raw body, calculates Base64-encoded HMAC-SHA256 over `x-webhook-timestamp + rawBody` with the Cashfree client secret, uses a timing-safe signature comparison, rejects invalid signatures, and deduplicates `x-idempotency-key`. Payment amount and currency must match the local order before access is enabled.
 
-## 7. Admin order history and refunds
+## 8. Admin offer-code policies
+
+Open `http://localhost:5000/offer-codes` after administrator login. An administrator can configure:
+
+- Code and display name
+- Optional assignment to one registered user by phone number
+- All courses or one Current Affairs course
+- Percentage or fixed-rupee discount
+- Minimum order and optional maximum discount
+- Global and per-user usage limits
+- Start and expiry timestamps
+- Whether the code stacks with the course's automatic offer
+- Active/inactive status
+
+An order initially reserves a use. A verified `PAID` event marks it redeemed. `FAILED`, `EXPIRED`, and `USER_DROPPED` orders release the reservation so the user can retry.
+
+## 9. Admin order history and refunds
 
 Open `http://localhost:5000/orders`. The page shows order ID, item, purchaser, phone, amount, payment/refund status, and time.
 
@@ -132,13 +188,14 @@ POST /pg/orders/{order_id}/refunds
 
 The initial response is stored immediately. Final `SUCCESS`, failure, or cancellation state is updated asynchronously by the signed refund webhook. Multiple partial refunds are supported but their total cannot exceed the paid amount.
 
-## 8. Admin-managed parts
+## 10. Admin-managed parts
 
 - Current Affairs: add, edit, delete, pricing, GST, platform fee, offers, publishing, PDF upload.
 - Cashfree Settings: sandbox/live mode, credentials, API version, return URL, webhook URL, enabled state.
 - Orders & Refunds: purchaser and item history, paid/refunded amounts, gateway status, full/partial refund.
+- Offer Codes: policy creation, course targeting, eligibility windows, usage limits, stacking, and activation.
 
-## 9. Production checklist
+## 11. Production checklist
 
 - Test the complete success, failed, dropped, expired, partial-refund, and full-refund flows in Cashfree sandbox.
 - Use HTTPS, production Cashfree keys, strong application secrets, and the protected administrator password-plus-OTP login.

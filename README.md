@@ -16,6 +16,14 @@ Cashfree checkout, authenticated purchases, admin payment configuration, order
 history, refunds, webhook security, and production setup are documented in
 [CASHFREE_PAYMENT_API.md](./CASHFREE_PAYMENT_API.md).
 
+Test Series and Books admin CRUD, normalized catalog schema, public pagination
+and filtering APIs, validation rules, and frontend response contracts are documented in
+[TEST_SERIES_AND_BOOKS_API.md](./TEST_SERIES_AND_BOOKS_API.md).
+
+Offer-code policy creation, user assignment, checkout validation, redemption
+limits, and frontend integration are documented in
+[OFFER_CODES_API.md](./OFFER_CODES_API.md).
+
 Super-admin bootstrap, one-time OTP provider setup, password-plus-OTP login,
 protected dashboard routes, and administrator creation are documented in
 [ADMIN_AUTH.md](./ADMIN_AUTH.md).

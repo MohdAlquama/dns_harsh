@@ -1,36 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNS Admin - Dashboard</title>
-    
-  
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-  
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            }
-          }
-        }
-      }
-    </script>
-</head>
-<body class="bg-slate-10 font-sans antialiased">
-    
-
 <!-- SIDEBAR HTML -->
 <aside
   id="sidebar"
-  class="fixed inset-y-0 left-0 h-screen w-[280px] bg-white border-r border-slate-200/80 shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex flex-col z-40 transition-all duration-300 -translate-x-full lg:translate-x-0"
+  class="fixed inset-y-0 left-0 h-screen w-[260px] bg-white border-r border-slate-200/80 shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex flex-col z-40 transition-all duration-300 -translate-x-full lg:translate-x-0"
 >
   <div class="h-16 flex items-center px-6 border-b border-slate-100 shrink-0">
     <div class="flex items-center gap-3">
@@ -90,6 +61,10 @@
       <i data-lucide="receipt-text" class="w-5 h-5 transition-transform"></i>
       <span>Orders & Refunds</span>
     </a>
+    <a href="/offer-codes" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+      <i data-lucide="badge-percent" class="w-5 h-5 transition-transform"></i>
+      <span>Offer Codes</span>
+    </a>
     <a href="/payment-settings" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
       <i data-lucide="credit-card" class="w-5 h-5 transition-transform"></i>
       <span>Cashfree Settings</span>
@@ -118,7 +93,7 @@
 
   // --- NAYA LOGIC: Page load hone par check karega ki sidebar band rakhna hai ya khula ---
   document.addEventListener('DOMContentLoaded', () => {
-    const sidebarState = localStorage.getItem('sidebarState');
+    const sidebarState = localStorage.getItem('dnsAdminSidebarStateV2');
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     
@@ -150,9 +125,9 @@
 
       // --- NAYA LOGIC: Button dabane par state save karein ---
       if (sidebar.classList.contains('!-translate-x-full')) {
-        localStorage.setItem('sidebarState', 'closed'); // Band kar diya
+        localStorage.setItem('dnsAdminSidebarStateV2', 'closed'); // Band kar diya
       } else {
-        localStorage.setItem('sidebarState', 'open'); // Khool diya
+        localStorage.setItem('dnsAdminSidebarStateV2', 'open'); // Khool diya
       }
 
     } else {
@@ -180,13 +155,14 @@
       link.classList.add(...inactiveClasses);
     }
 
-    // --- NAYA LOGIC: Kisi bhi link par click karne par sidebar band karke full screen kar do ---
+    // Mobile par navigation ke baad drawer close kar do. Desktop state ko na badlein.
     link.addEventListener('click', () => {
-      if (window.innerWidth >= 1024) {
-        localStorage.setItem('sidebarState', 'closed');
+      if (window.innerWidth < 1024) {
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.add('-translate-x-full');
+        sidebarOverlay?.classList.add('hidden');
       }
     });
   });
 </script>
-</body>
-</html>

@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto space-y-6">
+<div class="max-w mx-auto space-y-6">
   <div><p class="text-sm font-semibold text-violet-600">Commerce</p><h1 class="text-2xl font-bold text-slate-900 mt-1">Orders & refunds</h1><p class="text-sm text-slate-500 mt-1">See who bought what and initiate full or partial refunds.</p></div>
   <% if (refunded) { %><div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">Refund submitted to Cashfree. Final status updates by webhook.</div><% } %>
   <% if (error) { %><div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><%= error %></div><% } %>
@@ -7,7 +7,7 @@
     <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 text-left"><tr><th class="p-4">Order / item</th><th class="p-4">Customer</th><th class="p-4">Amount</th><th class="p-4">Status</th><th class="p-4">Created</th><th class="p-4">Refund</th></tr></thead>
     <tbody class="divide-y divide-slate-100"><% orders.forEach((order) => { const remaining = Number(order.order_amount) - Number(order.refunded_amount); %>
       <tr id="order-<%= order.id %>" class="align-top hover:bg-slate-50/60 target:bg-violet-50 target:ring-2 target:ring-inset target:ring-violet-300">
-        <td class="p-4"><p class="font-semibold text-slate-800"><%= order.item_name %></p><p class="text-xs text-slate-400 mt-1"><%= order.merchant_order_id %></p></td>
+        <td class="p-4"><p class="font-semibold text-slate-800"><%= order.item_name %></p><p class="text-xs text-slate-400 mt-1"><%= order.merchant_order_id %></p><% if (order.offer_code) { %><p class="mt-2 inline-flex rounded-md bg-violet-100 px-2 py-1 font-mono text-xs font-bold text-violet-700"><%= order.offer_code %></p><% } %></td>
         <td class="p-4"><p class="font-medium"><%= order.customer_name %></p><p class="text-xs text-slate-500"><%= order.customer_phone %></p></td>
         <td class="p-4"><p class="font-semibold">₹<%= Number(order.order_amount).toFixed(2) %></p><% if (Number(order.refunded_amount)) { %><p class="text-xs text-amber-600">₹<%= Number(order.refunded_amount).toFixed(2) %> refunded</p><% } %></td>
         <td class="p-4"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold <%= order.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : order.status.includes('REFUND') ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600' %>"><%= order.status.replaceAll('_',' ') %></span>

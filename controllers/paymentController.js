@@ -10,23 +10,44 @@ import {
 import {
     CashfreeError, createCashfreeOrder, getCashfreeOrder, verifyCashfreeWebhook
 } from "../services/cashfreeService.js";
+import { findOfferByCode, OfferCodeError } from "../models/offerCodeModel.js";
 
 const roundMoney = (value) => Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 const documentRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "public", "uploads", "current-affairs");
 
-const calculateCoursePrice = (course) => {
+const calculateCoursePrice = (course, offerCode = null) => {
     const base = roundMoney(course.base_price);
-    let discount = 0;
+    let courseDiscount = 0;
     if (course.offer?.is_active) {
-        discount = course.offer.discount_type === "PERCENT"
+        courseDiscount = course.offer.discount_type === "PERCENT"
             ? roundMoney(base * Number(course.offer.discount_value) / 100)
             : roundMoney(course.offer.discount_value);
     }
-    discount = Math.min(base, discount);
+    courseDiscount = Math.min(base, courseDiscount);
+
+    let offerCodeDiscount = 0;
+    if (offerCode) {
+        if (!offerCode.stack_with_course_offer) courseDiscount = 0;
+        const offerBasis = roundMoney(base - courseDiscount);
+        offerCodeDiscount = offerCode.discount_type === "PERCENT"
+            ? roundMoney(offerBasis * Number(offerCode.discount_value) / 100)
+            : roundMoney(offerCode.discount_value);
+        if (offerCode.max_discount_amount !== null) {
+            offerCodeDiscount = Math.min(offerCodeDiscount, Number(offerCode.max_discount_amount));
+        }
+        offerCodeDiscount = Math.min(offerBasis, roundMoney(offerCodeDiscount));
+    }
+    const discount = roundMoney(courseDiscount + offerCodeDiscount);
     const taxable = roundMoney(base - discount);
     const gst = course.gst_enabled ? roundMoney(taxable * Number(course.gst_percent || 0) / 100) : 0;
     const platform = course.platform_charge_enabled ? roundMoney(course.platform_charge || 0) : 0;
-    return { base, discount, gst, platform, total: roundMoney(taxable + gst + platform) };
+    const result = { base, discount, gst, platform, total: roundMoney(taxable + gst + platform) };
+    return offerCode ? {
+        ...result,
+        courseDiscount,
+        offerCodeDiscount,
+        offerCode: offerCode.code
+    } : result;
 };
 
 const publicOrder = (order) => ({
@@ -36,6 +57,7 @@ const publicOrder = (order) => ({
     refundedAmount: Number(order.refunded_amount),
     currency: order.currency,
     status: order.status,
+    offerCode: order.offer_code || null,
     paidAt: order.paid_at,
     createdAt: order.created_at
 });
@@ -55,7 +77,12 @@ const createOrder = async (req, res) => {
         if (owned) {
             return res.status(409).json({ success: false, message: "You already own this item", orderId: owned.merchant_order_id });
         }
-        const price = calculateCoursePrice(course);
+        const requestedOfferCode = String(req.body.offerCode || "").trim();
+        const offer = requestedOfferCode ? await findOfferByCode({
+            code: requestedOfferCode, userId: req.user.id, courseId: course.id,
+            subtotal: Number(course.base_price)
+        }) : null;
+        const price = calculateCoursePrice(course, offer);
         if (price.total < 1) {
             return res.status(422).json({ success: false, message: "Cashfree orders must be at least ₹1" });
         }
@@ -64,7 +91,8 @@ const createOrder = async (req, res) => {
         await createLocalOrder({
             merchantOrderId, userId: req.user.id, itemType: "CURRENT_AFFAIRS", itemId: course.id,
             itemName: course.course_name, baseAmount: price.base, discountAmount: price.discount,
-            gstAmount: price.gst, platformAmount: price.platform, orderAmount: price.total
+            gstAmount: price.gst, platformAmount: price.platform, orderAmount: price.total,
+            offer
         });
         const gatewayOrder = await createCashfreeOrder({
             merchantOrderId, amount: price.total, customer: req.user, itemName: course.course_name,
@@ -79,8 +107,40 @@ const createOrder = async (req, res) => {
     } catch (error) {
         if (merchantOrderId) await failLocalOrder(merchantOrderId, error.message);
         console.error("Create payment order error:", error);
-        const status = error instanceof CashfreeError ? error.status : 500;
-        return res.status(status).json({ success: false, message: error.message || "Unable to create order" });
+        const status = error instanceof CashfreeError || error instanceof OfferCodeError ? error.status : 500;
+        return res.status(status).json({
+            success: false, message: error.message || "Unable to create order",
+            ...(error instanceof OfferCodeError ? { code: error.code } : {})
+        });
+    }
+};
+
+const validateOfferCode = async (req, res) => {
+    try {
+        const courseId = Number.parseInt(req.body.currentAffairsId, 10);
+        if (!Number.isInteger(courseId) || courseId < 1) {
+            return res.status(400).json({ success: false, message: "currentAffairsId is required" });
+        }
+        const course = await getCurrentAffairsCourseById(courseId);
+        if (!course || course.status !== "PUBLISHED") {
+            return res.status(404).json({ success: false, message: "Purchasable item not found" });
+        }
+        const offer = await findOfferByCode({
+            code: req.body.offerCode, userId: req.user.id, courseId: course.id,
+            subtotal: Number(course.base_price)
+        });
+        const price = calculateCoursePrice(course, offer);
+        return res.json({
+            success: true,
+            offer: { code: offer.code, name: offer.name },
+            priceBreakdown: price
+        });
+    } catch (error) {
+        if (error instanceof OfferCodeError) {
+            return res.status(error.status).json({ success: false, code: error.code, message: error.message });
+        }
+        console.error("Validate offer code error:", error);
+        return res.status(500).json({ success: false, message: "Unable to validate offer code" });
     }
 };
 
@@ -218,4 +278,4 @@ const webhook = async (req, res) => {
 
 const showPaymentReturn = (req, res) => res.render("payment/return", { orderId: req.query.order_id || "" });
 
-export { calculateCoursePrice, createOrder, downloadDocument, getOrder, getPurchases, showPaymentReturn, webhook };
+export { calculateCoursePrice, createOrder, downloadDocument, getOrder, getPurchases, showPaymentReturn, validateOfferCode, webhook };

@@ -1,0 +1,40 @@
+<div class="max-w mx-auto space-y-6">
+  <div><p class="text-sm font-semibold text-violet-600">Commerce</p><h1 class="mt-1 text-2xl font-bold text-slate-900">Offer codes</h1><p class="mt-1 text-sm text-slate-500">Create server-verified checkout discounts with course, date, order, and user limits.</p></div>
+  <% if (saved) { %><div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">Offer policy saved.</div><% } %>
+  <% if (error) { %><div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><%= error %></div><% } %>
+
+  <div class="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
+    <form method="POST" action="/offer-codes" class="h-fit space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="font-bold text-slate-900">New offer policy</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="col-span-2 text-sm font-medium">Code<input name="code" required minlength="3" maxlength="50" placeholder="WELCOME20" class="mt-1 w-full uppercase rounded-xl border border-slate-300 p-3"></label>
+        <label class="col-span-2 text-sm font-medium">Offer name<input name="name" required maxlength="150" placeholder="New user welcome offer" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+        <label class="col-span-2 text-sm font-medium">Course scope<select name="course_id" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><option value="">All courses</option><% courses.forEach((course) => { %><option value="<%= course.id %>"><%= course.course_name %></option><% }) %></select></label>
+        <label class="col-span-2 text-sm font-medium">Specific user phone <span class="font-normal text-slate-400">(optional)</span><input inputmode="numeric" name="eligible_phone" placeholder="Blank = all users" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+        <label class="text-sm font-medium">Discount type<select name="discount_type" class="mt-1 w-full rounded-xl border border-slate-300 p-3"><option value="PERCENT">Percent</option><option value="FIXED">Fixed ₹</option></select></label>
+        <label class="text-sm font-medium">Discount value<input type="number" name="discount_value" required min="0.01" step="0.01" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+        <label class="text-sm font-medium">Minimum order ₹<input type="number" name="min_order_amount" min="0" step="0.01" value="0" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+        <label class="text-sm font-medium">Maximum discount ₹<input type="number" name="max_discount_amount" min="0.01" step="0.01" placeholder="No cap" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+        <label class="text-sm font-medium">Total uses<input type="number" name="total_usage_limit" min="1" step="1" placeholder="Unlimited" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+        <label class="text-sm font-medium">Uses per user<input type="number" name="per_user_limit" min="1" step="1" value="1" required class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+        <label class="text-sm font-medium">Valid from<input type="datetime-local" name="valid_from" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+        <label class="text-sm font-medium">Valid until<input type="datetime-local" name="valid_until" class="mt-1 w-full rounded-xl border border-slate-300 p-3"></label>
+      </div>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="stack_with_course_offer" class="rounded border-slate-300"> Stack with the course's automatic offer</label>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_active" checked class="rounded border-slate-300"> Active immediately</label>
+      <button class="w-full rounded-xl bg-violet-600 py-3 font-semibold text-white hover:bg-violet-700">Create offer code</button>
+    </form>
+
+    <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <% if (!offers.length) { %><div class="py-16 text-center text-slate-500">No offer codes created yet.</div><% } else { %>
+      <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-slate-50 text-left text-slate-500"><tr><th class="p-4">Offer</th><th class="p-4">Policy</th><th class="p-4">Validity</th><th class="p-4">Usage</th><th class="p-4">Status</th></tr></thead>
+      <tbody class="divide-y divide-slate-100"><% offers.forEach((offer) => { %><tr class="align-top">
+        <td class="p-4"><p class="font-mono font-bold text-violet-700"><%= offer.code %></p><p class="mt-1 font-medium text-slate-800"><%= offer.name %></p><p class="mt-1 text-xs text-slate-400"><%= offer.course_name || 'All courses' %></p><p class="mt-1 text-xs text-slate-400"><%= offer.assigned_phones ? `Only user ${offer.assigned_phones}` : 'All eligible users' %></p></td>
+        <td class="p-4"><p class="font-semibold"><%= offer.discount_type === 'PERCENT' ? `${Number(offer.discount_value)}%` : `₹${Number(offer.discount_value).toFixed(2)}` %> off</p><p class="mt-1 text-xs text-slate-500">Min ₹<%= Number(offer.min_order_amount).toFixed(2) %><%= offer.max_discount_amount !== null ? ` · Max ₹${Number(offer.max_discount_amount).toFixed(2)}` : '' %></p><p class="mt-1 text-xs text-slate-500"><%= offer.stack_with_course_offer ? 'Stacks with course offer' : 'Replaces course offer' %></p></td>
+        <td class="p-4 text-xs text-slate-500"><p><%= offer.valid_from ? new Date(offer.valid_from).toLocaleString('en-IN') : 'Starts immediately' %></p><p class="mt-1"><%= offer.valid_until ? new Date(offer.valid_until).toLocaleString('en-IN') : 'No expiry' %></p></td>
+        <td class="p-4"><p class="font-semibold"><%= Number(offer.redeemed) %> redeemed</p><p class="mt-1 text-xs text-slate-500"><%= Number(offer.reserved_or_redeemed) %><%= offer.total_usage_limit !== null ? ` / ${offer.total_usage_limit}` : '' %> reserved/used</p><p class="mt-1 text-xs text-slate-500"><%= offer.per_user_limit %> per user</p></td>
+        <td class="p-4"><form method="POST" action="/offer-codes/<%= offer.id %>/status"><input type="hidden" name="is_active" value="<%= offer.is_active ? '0' : '1' %>"><button class="rounded-lg px-3 py-2 text-xs font-bold <%= offer.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' %>"><%= offer.is_active ? 'Active' : 'Inactive' %></button></form></td>
+      </tr><% }) %></tbody></table></div><% } %>
+    </section>
+  </div>
+</div>
