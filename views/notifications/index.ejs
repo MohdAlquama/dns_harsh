@@ -1,0 +1,218 @@
+<div class="mx-auto max-w-6xl space-y-6">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div>
+      <p class="text-sm font-semibold text-violet-600">Messaging</p>
+      <h1 class="mt-1 text-2xl font-bold text-slate-900">FCM notifications</h1>
+      <p class="mt-1 text-sm text-slate-500">Send push notifications to a user's registered browser devices.</p>
+    </div>
+    <a href="/fcm-registration.html" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+      <i data-lucide="external-link" class="h-4 w-4"></i>
+      Client setup page
+    </a>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-4">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-sm text-slate-500">Registered tokens</p>
+      <p class="mt-2 text-2xl font-bold text-slate-900"><%= summary.totalTokens.toLocaleString('en-IN') %></p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-sm text-slate-500">Reachable users</p>
+      <p class="mt-2 text-2xl font-bold text-slate-900"><%= summary.usersWithTokens.toLocaleString('en-IN') %></p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-sm text-slate-500">Last token update</p>
+      <p class="mt-2 text-sm font-semibold text-slate-900"><%= summary.lastTokenAt ? new Date(summary.lastTokenAt).toLocaleString('en-IN') : 'No tokens yet' %></p>
+    </div>
+    <div class="rounded-2xl border <%= summary.firebaseAdminConfigured ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50' %> p-5 shadow-sm">
+      <p class="text-sm <%= summary.firebaseAdminConfigured ? 'text-emerald-700' : 'text-amber-700' %>">Firebase Admin</p>
+      <p class="mt-2 text-sm font-bold <%= summary.firebaseAdminConfigured ? 'text-emerald-800' : 'text-amber-800' %>"><%= summary.firebaseAdminConfigured ? 'Configured' : 'Missing service account' %></p>
+    </div>
+  </div>
+
+  <% if (!summary.firebaseAdminConfigured) { %>
+    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+      Set <code>FIREBASE_SERVICE_ACCOUNT_JSON</code> on the backend before sending notifications.
+    </div>
+  <% } %>
+
+  <%- include('./config', { summary }) %>
+
+  <div id="sendAlert" class="hidden rounded-2xl border p-4 text-sm"></div>
+
+  <div class="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+    <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 p-5">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <label class="flex-1 text-sm font-semibold text-slate-700">Find recipient
+            <input id="recipientSearch" type="search" value="<%= search %>" placeholder="Search by name, phone, or user ID" class="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100">
+          </label>
+          <button id="refreshRecipients" type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            <i data-lucide="search" class="h-4 w-4"></i>
+            Search
+          </button>
+        </div>
+      </div>
+
+      <div class="max-h-[560px] overflow-y-auto">
+        <table class="w-full text-sm">
+          <thead class="sticky top-0 bg-slate-50 text-left text-slate-500">
+            <tr>
+              <th class="p-4">Select</th>
+              <th class="p-4">User</th>
+              <th class="p-4">Devices</th>
+              <th class="p-4">Last token</th>
+            </tr>
+          </thead>
+          <tbody id="recipientRows" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <form id="notificationForm" class="space-y-5">
+        <input id="selectedUserId" name="userId" type="hidden">
+
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Selected recipient</p>
+          <p id="selectedUserLabel" class="mt-1 font-semibold text-slate-900">Choose a user from the list</p>
+        </div>
+
+        <label class="block text-sm font-semibold text-slate-700">Title
+          <input name="title" maxlength="120" required placeholder="Payment approved" class="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100">
+        </label>
+
+        <label class="block text-sm font-semibold text-slate-700">Message
+          <textarea name="body" maxlength="500" required rows="4" placeholder="Your order has been confirmed." class="mt-2 w-full resize-y rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"></textarea>
+        </label>
+
+        <label class="block text-sm font-semibold text-slate-700">Optional data payload
+          <textarea name="data" rows="5" spellcheck="false" placeholder='{"module":"orders","type":"payment_update"}' class="mt-2 w-full resize-y rounded-xl border border-slate-300 px-3 py-2.5 font-mono text-xs outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"></textarea>
+        </label>
+
+        <button id="sendButton" type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-semibold text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-slate-300">
+          <i data-lucide="send" class="h-4 w-4"></i>
+          Send notification
+        </button>
+      </form>
+    </section>
+  </div>
+</div>
+
+<script>
+  const initialRecipients = <%- JSON.stringify(recipients).replace(/</g, "\\u003c") %>;
+  const recipientRows = document.getElementById("recipientRows");
+  const selectedUserId = document.getElementById("selectedUserId");
+  const selectedUserLabel = document.getElementById("selectedUserLabel");
+  const alertBox = document.getElementById("sendAlert");
+  const sendButton = document.getElementById("sendButton");
+
+  const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+
+  const showAlert = (type, message) => {
+    alertBox.className = `rounded-2xl border p-4 text-sm ${type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`;
+    alertBox.textContent = message;
+  };
+
+  const formatDate = (value) => value ? new Date(value).toLocaleString("en-IN") : "No token";
+
+  const selectRecipient = (recipient) => {
+    selectedUserId.value = recipient.id;
+    selectedUserLabel.textContent = `${recipient.name || "Unnamed user"} · User #${recipient.id}`;
+    document.querySelectorAll("[data-recipient-row]").forEach((row) => {
+      row.classList.toggle("bg-violet-50", Number(row.dataset.userId) === Number(recipient.id));
+    });
+  };
+
+  const renderRecipients = (recipients) => {
+    if (!recipients.length) {
+      recipientRows.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-slate-500">No matching users found.</td></tr>';
+      return;
+    }
+
+    recipientRows.innerHTML = recipients.map((recipient) => `
+      <tr data-recipient-row data-user-id="${recipient.id}" class="cursor-pointer hover:bg-slate-50">
+        <td class="p-4"><input type="radio" name="recipient" value="${recipient.id}" class="h-4 w-4 accent-violet-600"></td>
+        <td class="p-4">
+          <p class="font-semibold text-slate-800">${escapeHtml(recipient.name || "Unnamed user")}</p>
+          <p class="mt-1 text-xs text-slate-400">User #${escapeHtml(recipient.id)} · ${escapeHtml(recipient.phone_number || "No phone")}</p>
+        </td>
+        <td class="p-4">
+          <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${recipient.tokenCount ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}">${recipient.tokenCount} device${recipient.tokenCount === 1 ? "" : "s"}</span>
+        </td>
+        <td class="p-4 whitespace-nowrap text-xs text-slate-500">${formatDate(recipient.lastTokenAt)}</td>
+      </tr>
+    `).join("");
+
+    recipientRows.querySelectorAll("[data-recipient-row]").forEach((row, index) => {
+      row.addEventListener("click", () => {
+        row.querySelector("input").checked = true;
+        selectRecipient(recipients[index]);
+      });
+    });
+  };
+
+  const loadRecipients = async () => {
+    const query = new URLSearchParams({ search: document.getElementById("recipientSearch").value.trim() });
+    const response = await fetch(`/api/v1/admin/notifications/recipients?${query.toString()}`, { credentials: "include" });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || "Unable to load recipients");
+    renderRecipients(result.recipients || []);
+  };
+
+  document.getElementById("refreshRecipients").addEventListener("click", () => {
+    loadRecipients().catch((error) => showAlert("error", error.message));
+  });
+
+  document.getElementById("notificationForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const userId = Number(formData.get("userId"));
+    if (!Number.isInteger(userId) || userId < 1) {
+      showAlert("error", "Select a recipient before sending.");
+      return;
+    }
+
+    let data = {};
+    const rawData = String(formData.get("data") || "").trim();
+    if (rawData) {
+      try {
+        data = JSON.parse(rawData);
+      } catch {
+        showAlert("error", "Optional data payload must be valid JSON.");
+        return;
+      }
+    }
+
+    sendButton.disabled = true;
+    try {
+      const response = await fetch("/api/notifications/send-to-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          userId,
+          title: formData.get("title"),
+          body: formData.get("body"),
+          data
+        })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || "Unable to send notification");
+      showAlert("success", `${result.message}. Sent: ${result.successCount}, failed: ${result.failureCount}, stale removed: ${result.staleTokenCount}.`);
+      await loadRecipients();
+    } catch (error) {
+      showAlert("error", error.message);
+    } finally {
+      sendButton.disabled = false;
+    }
+  });
+
+  renderRecipients(initialRecipients);
+</script>

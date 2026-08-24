@@ -33,6 +33,9 @@ import userRoutes from "./routes/userRoutes.js";
 import createCatalogProductTables from "./models/catalogProductTables.js";
 import catalogAdminRoutes from "./routes/catalogAdminRoutes.js";
 import catalogApiRoutes from "./routes/catalogApiRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import notificationAdminRoutes from "./routes/notificationAdminRoutes.js";
+import createFcmTokenTable from "./models/fcmTokenTable.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -67,6 +70,7 @@ app.use("/api/v1/ads", adRoutes);
 app.use("/api/v1/current-affairs", currentAffairsApiRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1", catalogApiRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.get("/payment/return", showPaymentReturn);
 app.use('/dashboard', requireAdmin, getDashboard);
 app.use("/", requireAdmin, currentAffairsRoutes);
@@ -76,6 +80,7 @@ app.use("/", requireAdmin, paymentAdminRoutes);
 app.use("/", requireAdmin, adminManagementRoutes);
 app.use("/", requireAdmin, userRoutes);
 app.use("/", requireAdmin, catalogAdminRoutes);
+app.use("/", notificationAdminRoutes);
 app.get("/auth-settings", requireAdmin, showAuthSettings);
 
 // Redirect root to dashboard
@@ -93,6 +98,7 @@ await createCatalogProductTables();
 await createAdTables();
 await createPaymentTables();
 await createSocialMediaTables();
+await createFcmTokenTable();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

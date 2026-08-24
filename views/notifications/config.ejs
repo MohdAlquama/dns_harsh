@@ -1,0 +1,119 @@
+<section class="rounded-3xl border border-slate-200 bg-white shadow-sm">
+  <div class="border-b border-slate-200 p-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-sm font-semibold text-violet-600">Configuration</p>
+        <h2 class="mt-1 text-xl font-bold text-slate-900">FCM setup values</h2>
+        <p class="mt-1 text-sm text-slate-500">Use this panel to configure Firebase on backend and browser files.</p>
+      </div>
+      <span class="inline-flex w-fit rounded-full px-3 py-1 text-xs font-bold <%= summary.firebaseAdminConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' %>">
+        <%= summary.firebaseAdminConfigured ? 'Backend ready' : 'Backend env missing' %>
+      </span>
+    </div>
+  </div>
+
+  <div class="grid gap-5 p-5 lg:grid-cols-2">
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <div class="flex items-start gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+          <i data-lucide="server-cog" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-900">Backend Admin SDK</h3>
+          <p class="mt-1 text-sm text-slate-500">Set this as a private server environment variable. Do not put it in frontend code.</p>
+        </div>
+      </div>
+      <label class="mt-4 block text-sm font-semibold text-slate-700">Environment variable
+        <textarea id="fcmBackendEnv" readonly rows="5" class="mt-2 w-full resize-y rounded-xl border border-slate-300 bg-white p-3 font-mono text-xs text-slate-700">FIREBASE_SERVICE_ACCOUNT_JSON='{"type":"service_account","project_id":"YOUR_PROJECT_ID","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n","client_email":"firebase-adminsdk-...@YOUR_PROJECT_ID.iam.gserviceaccount.com"}'</textarea>
+      </label>
+      <button type="button" data-copy-target="fcmBackendEnv" class="mt-3 inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+        <i data-lucide="copy" class="h-4 w-4"></i>
+        Copy env template
+      </button>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <div class="flex items-start gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-700">
+          <i data-lucide="code-2" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-900">Browser Firebase config</h3>
+          <p class="mt-1 text-sm text-slate-500">Paste these public values into both browser Firebase files.</p>
+        </div>
+      </div>
+      <label class="mt-4 block text-sm font-semibold text-slate-700">Client config template
+        <textarea id="fcmClientConfig" readonly rows="8" class="mt-2 w-full resize-y rounded-xl border border-slate-300 bg-white p-3 font-mono text-xs text-slate-700">const firebaseConfig = {
+  apiKey: "YOUR_FIREBASE_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_FIREBASE_APP_ID"
+};
+
+const vapidKey = "YOUR_WEB_PUSH_CERTIFICATE_KEY_PAIR";</textarea>
+      </label>
+      <button type="button" data-copy-target="fcmClientConfig" class="mt-3 inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+        <i data-lucide="copy" class="h-4 w-4"></i>
+        Copy client template
+      </button>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5">
+      <h3 class="font-bold text-slate-900">Files to update</h3>
+      <div class="mt-4 space-y-3 text-sm">
+        <div class="flex items-start gap-3 rounded-xl bg-slate-50 p-3">
+          <i data-lucide="file-code-2" class="mt-0.5 h-4 w-4 text-slate-500"></i>
+          <div>
+            <p class="font-semibold text-slate-800">public/fcm-registration.html</p>
+            <p class="text-slate-500">Add web config and VAPID key for token registration.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 rounded-xl bg-slate-50 p-3">
+          <i data-lucide="file-code-2" class="mt-0.5 h-4 w-4 text-slate-500"></i>
+          <div>
+            <p class="font-semibold text-slate-800">public/firebase-messaging-sw.js</p>
+            <p class="text-slate-500">Add the same Firebase web config for background messages.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 rounded-xl bg-slate-50 p-3">
+          <i data-lucide="terminal" class="mt-0.5 h-4 w-4 text-slate-500"></i>
+          <div>
+            <p class="font-semibold text-slate-800">Server environment</p>
+            <p class="text-slate-500">Set <code>FIREBASE_SERVICE_ACCOUNT_JSON</code> before running <code>npm start</code>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5">
+      <h3 class="font-bold text-slate-900">Setup checklist</h3>
+      <div class="mt-4 space-y-3 text-sm text-slate-600">
+        <label class="flex items-center gap-3"><input type="checkbox" class="h-4 w-4 accent-violet-600"> Firebase Web app created</label>
+        <label class="flex items-center gap-3"><input type="checkbox" class="h-4 w-4 accent-violet-600"> Web Push certificate/VAPID key copied</label>
+        <label class="flex items-center gap-3"><input type="checkbox" class="h-4 w-4 accent-violet-600"> Service account JSON set on backend</label>
+        <label class="flex items-center gap-3"><input type="checkbox" class="h-4 w-4 accent-violet-600"> User has enabled notifications on client page</label>
+        <label class="flex items-center gap-3"><input type="checkbox" class="h-4 w-4 accent-violet-600"> Test notification sent from admin panel</label>
+      </div>
+      <div class="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+        Browser push works on <code>localhost</code> during development and requires HTTPS in production.
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll("[data-copy-target]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const target = document.getElementById(button.dataset.copyTarget);
+      if (!target) return;
+      await navigator.clipboard.writeText(target.value);
+      const originalText = button.textContent.trim();
+      button.lastChild.textContent = " Copied";
+      window.setTimeout(() => {
+        button.lastChild.textContent = ` ${originalText.replace(/^.*Copy/, "Copy")}`;
+      }, 1400);
+    });
+  });
+</script>

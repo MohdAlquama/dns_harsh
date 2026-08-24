@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Enable notifications</title>
+</head>
+<body>
+    <button id="enable-notifications" type="button">Enable notifications</button>
+    <p id="notification-status" aria-live="polite"></p>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js";
+
+        // These values are safe to expose in a client app. They identify your
+        // Firebase project; they are not the Firebase Admin service-account key.
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_FIREBASE_APP_ID"
+        };
+        const vapidKey = "YOUR_WEB_PUSH_CERTIFICATE_KEY_PAIR";
+
+        // Retrieve this after your normal login flow. Do not hard-code it in HTML.
+        const accessToken = sessionStorage.getItem("accessToken");
+        const currentUserId = Number(sessionStorage.getItem("userId"));
+        const status = document.getElementById("notification-status");
+        const messaging = getMessaging(initializeApp(firebaseConfig));
+
+        const enableNotifications = async () => {
+            if (!accessToken || !Number.isInteger(currentUserId)) {
+                throw new Error("Log in before enabling notifications");
+            }
+            if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+                throw new Error("This browser does not support push notifications");
+            }
+
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                throw new Error("Notification permission was not granted");
+            }
+
+            const serviceWorkerRegistration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+            const fcmToken = await getToken(messaging, { vapidKey, serviceWorkerRegistration });
+            if (!fcmToken) throw new Error("Firebase did not return a device token");
+
+            const response = await fetch("/api/notifications/register-token", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ userId: currentUserId, fcmToken })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.message || "Token registration failed");
+
+            status.textContent = "Notifications enabled.";
+        };
+
+        document.getElementById("enable-notifications").addEventListener("click", () => {
+            enableNotifications().catch((error) => {
+                console.error("FCM setup failed:", error);
+                status.textContent = error.message;
+            });
+        });
+
+        // Foreground messages are delivered to this listener instead of the service worker.
+        onMessage(messaging, (payload) => console.log("Foreground FCM message:", payload));
+    </script>
+</body>
+</html>
