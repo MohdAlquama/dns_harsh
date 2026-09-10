@@ -36,7 +36,9 @@ import catalogApiRoutes from "./routes/catalogApiRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import notificationAdminRoutes from "./routes/notificationAdminRoutes.js";
 import createFcmTokenTable from "./models/fcmTokenTable.js";
-
+import createAppVersionTables from "./models/appVersionTables.js";
+import appVersionRoutes from "./routes/appVersionRoutes.js";
+import appVersionPageRoutes from "./routes/appVersionPageRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,16 +64,22 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", apiCors);
 
-// Routes
 app.use("/admin", adminAuthRoutes);
 app.use("/", socialMediaRoutes);
+app.use("/app-versions", appVersionPageRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/ads", adRoutes);
 app.use("/api/v1/current-affairs", currentAffairsApiRoutes);
 app.use("/api/v1/payments", paymentRoutes);
+
+app.use("/api/v1/app-version", appVersionRoutes);
+
 app.use("/api/v1", catalogApiRoutes);
+
 app.use("/api/notifications", notificationRoutes);
+
 app.get("/payment/return", showPaymentReturn);
+
 app.use('/dashboard', requireAdmin, getDashboard);
 app.use("/", requireAdmin, currentAffairsRoutes);
 app.use("/api/v1/auth-config", requireAdmin, authConfigRoutes);
@@ -82,6 +90,7 @@ app.use("/", requireAdmin, userRoutes);
 app.use("/", requireAdmin, catalogAdminRoutes);
 app.use("/", notificationAdminRoutes);
 app.get("/auth-settings", requireAdmin, showAuthSettings);
+
 
 // Redirect root to dashboard
 app.get('/', (req, res) => {
@@ -99,6 +108,7 @@ await createAdTables();
 await createPaymentTables();
 await createSocialMediaTables();
 await createFcmTokenTable();
+await createAppVersionTables();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

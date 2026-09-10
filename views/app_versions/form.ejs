@@ -1,0 +1,540 @@
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+            <p class="text-sm font-semibold text-violet-600">
+                App Management
+            </p>
+
+            <h1 class="text-2xl font-bold text-slate-900">
+                <%= versionId ? "Edit App Version" : "New App Version" %>
+            </h1>
+
+            <p class="mt-1 text-sm text-slate-500">
+                Configure app update settings and release behavior.
+            </p>
+        </div>
+
+        <a
+            href="/app-versions"
+            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
+        >
+            <i data-lucide="arrow-left" class="h-4 w-4"></i>
+            Back
+        </a>
+
+    </div>
+
+
+    <!-- Error -->
+
+    <% if (error) { %>
+
+        <div class="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+
+            <i data-lucide="circle-alert" class="h-5 w-5"></i>
+
+            <span>
+                <%= error %>
+            </span>
+
+        </div>
+
+    <% } %>
+
+
+    <!-- Form -->
+
+    <form
+        method="POST"
+        action="<%= versionId ? `/app-versions/${versionId}` : '/app-versions' %>"
+        class="space-y-6"
+    >
+
+        <!-- Basic Information -->
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+
+            <div class="mb-6">
+
+                <h2 class="text-lg font-bold text-slate-900">
+                    Basic Information
+                </h2>
+
+                <p class="mt-1 text-sm text-slate-500">
+                    Set the platform and version details for this release.
+                </p>
+
+            </div>
+
+
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+                <!-- Platform -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Platform
+                    </label>
+
+                    <select
+                        name="platform"
+                        required
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    >
+
+                        <option
+                            value="ANDROID"
+                            <%= formData.platform === "ANDROID" ? "selected" : "" %>
+                        >
+                            Android
+                        </option>
+
+                        <option
+                            value="IOS"
+                            <%= formData.platform === "IOS" ? "selected" : "" %>
+                        >
+                            iOS
+                        </option>
+
+                        <option
+                            value="BOTH"
+                            <%= formData.platform === "BOTH" ? "selected" : "" %>
+                        >
+                            Android + iOS
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Version Name -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Version Name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="versionName"
+                        value="<%= formData.versionName || '' %>"
+                        placeholder="Example: 1.0.2"
+                        required
+                        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    />
+
+                    <p class="mt-1.5 text-xs text-slate-400">
+                        User-facing version name.
+                    </p>
+
+                </div>
+
+
+                <!-- Version Code -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Version Code
+                    </label>
+
+                    <input
+                        type="number"
+                        name="versionCode"
+                        value="<%= formData.versionCode || '' %>"
+                        placeholder="Example: 3"
+                        min="1"
+                        required
+                        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    />
+
+                    <p class="mt-1.5 text-xs text-slate-400">
+                        Numeric version used for update comparison.
+                    </p>
+
+                </div>
+
+
+                <!-- Minimum Version Code -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Minimum Version Code
+                    </label>
+
+                    <input
+                        type="number"
+                        name="minimumVersionCode"
+                        value="<%= formData.minimumVersionCode || '' %>"
+                        placeholder="Example: 2"
+                        min="1"
+                        required
+                        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    />
+
+                    <p class="mt-1.5 text-xs text-slate-400">
+                        Versions below this code will be forced to update.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Update Message -->
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+
+            <div class="mb-6">
+
+                <h2 class="text-lg font-bold text-slate-900">
+                    Update Message
+                </h2>
+
+                <p class="mt-1 text-sm text-slate-500">
+                    Customize the message shown to users when an update is available.
+                </p>
+
+            </div>
+
+
+            <div class="space-y-5">
+
+                <!-- Title -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Update Title
+                    </label>
+
+                    <input
+                        type="text"
+                        name="title"
+                        value="<%= formData.title || '' %>"
+                        placeholder="Example: New Update Available"
+                        required
+                        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    />
+
+                </div>
+
+
+                <!-- Description -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Description
+                    </label>
+
+                    <textarea
+                        name="description"
+                        rows="5"
+                        placeholder="Example: We have improved performance and fixed several bugs."
+                        class="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    ><%= formData.description || '' %></textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Update Behavior -->
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+
+            <div class="mb-6">
+
+                <h2 class="text-lg font-bold text-slate-900">
+                    Update Behavior
+                </h2>
+
+                <p class="mt-1 text-sm text-slate-500">
+                    Control how and where the update should be displayed.
+                </p>
+
+            </div>
+
+
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+                <!-- Screen -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Show Update On
+                    </label>
+
+                    <select
+                        name="screen"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    >
+
+                        <option
+                            value="ALL"
+                            <%= formData.screen === "ALL" ? "selected" : "" %>
+                        >
+                            All Screens
+                        </option>
+
+                        <option
+                            value="HOME"
+                            <%= formData.screen === "HOME" ? "selected" : "" %>
+                        >
+                            Home Screen
+                        </option>
+
+                        <option
+                            value="LOGIN"
+                            <%= formData.screen === "LOGIN" ? "selected" : "" %>
+                        >
+                            Login Screen
+                        </option>
+
+                        <option
+                            value="PROFILE"
+                            <%= formData.screen === "PROFILE" ? "selected" : "" %>
+                        >
+                            Profile Screen
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Button Type -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Button Type
+                    </label>
+
+                    <select
+                        name="buttonType"
+                        id="buttonType"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    >
+
+                        <option value="UPDATE" <%= formData.buttonType === "UPDATE" ? "selected" : "" %>>
+                            Update
+                        </option>
+
+                        <option value="DOWNLOAD" <%= formData.buttonType === "DOWNLOAD" ? "selected" : "" %>>
+                            Download
+                        </option>
+
+                        <option value="LINK" <%= formData.buttonType === "LINK" ? "selected" : "" %>>
+                            Open Link
+                        </option>
+
+                        <option value="CLOSE" <%= formData.buttonType === "CLOSE" ? "selected" : "" %>>
+                            Close
+                        </option>
+
+                        <option value="OTHER" <%= formData.buttonType === "OTHER" ? "selected" : "" %>>
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Button Name -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Button Name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="buttonName"
+                        value="<%= formData.buttonName || 'Update Now' %>"
+                        placeholder="Update Now"
+                        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    />
+
+                </div>
+
+
+                <!-- Button URL -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Button URL
+                    </label>
+
+                    <input
+                        type="url"
+                        name="buttonUrl"
+                        value="<%= formData.buttonUrl || '' %>"
+                        placeholder="https://play.google.com/store/apps/..."
+                        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    />
+
+                    <p class="mt-1.5 text-xs text-slate-400">
+                        Play Store, App Store, download or external URL.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Skip Update -->
+
+            <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+
+                <label class="flex cursor-pointer items-start gap-3">
+
+                    <input
+                        type="checkbox"
+                        name="skipAllowed"
+                        value="1"
+                        <%= Number(formData.skipAllowed) === 1 ? "checked" : "" %>
+                        class="mt-1 h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                    />
+
+                    <div>
+
+                        <div class="font-semibold text-slate-800">
+                            Allow users to skip this update
+                        </div>
+
+                        <p class="mt-1 text-xs leading-5 text-slate-500">
+                            Disable this option when the update should be mandatory.
+                        </p>
+
+                    </div>
+
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- Schedule & Status -->
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+
+            <div class="mb-6">
+
+                <h2 class="text-lg font-bold text-slate-900">
+                    Release Settings
+                </h2>
+
+                <p class="mt-1 text-sm text-slate-500">
+                    Schedule the release and control its active status.
+                </p>
+
+            </div>
+
+
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+                <!-- Schedule -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Schedule Date & Time
+                    </label>
+
+                    <input
+                        type="datetime-local"
+                        name="scheduleDate"
+                        value="<%= formData.scheduleDate ? new Date(formData.scheduleDate).toISOString().slice(0, 16) : '' %>"
+                        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    />
+
+                    <p class="mt-1.5 text-xs text-slate-400">
+                        Leave empty to make the version available immediately.
+                    </p>
+
+                </div>
+
+
+                <!-- Active -->
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Version Status
+                    </label>
+
+                    <label class="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-slate-200 px-4 py-3">
+
+                        <input
+                            type="checkbox"
+                            name="isActive"
+                            value="1"
+                            <%= Number(formData.isActive) === 1 ? "checked" : "" %>
+                            class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                        />
+
+                        <span class="text-sm font-medium text-slate-700">
+                            Make this version active
+                        </span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Submit -->
+
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
+            <a
+                href="/app-versions"
+                class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+            >
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 focus:outline-none focus:ring-4 focus:ring-violet-100"
+            >
+
+                <i data-lucide="save" class="h-4 w-4"></i>
+
+                <%= versionId ? "Update Version" : "Create Version" %>
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+</script>

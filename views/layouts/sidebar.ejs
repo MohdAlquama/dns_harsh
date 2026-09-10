@@ -21,6 +21,10 @@
       <i data-lucide="book-open" class="w-5 h-5 transition-transform"></i>
       <span>Courses</span>
     </a>
+    <a href="/files-folders" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+  <i data-lucide="folder-tree" class="w-5 h-5 transition-transform"></i>
+  <span>Files & Folders</span>
+  x </a>
     <a href="/test-series" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
       <i data-lucide="file-text" class="w-5 h-5 transition-transform"></i>
       <span>Test Series</span>
@@ -77,12 +81,33 @@
       <i data-lucide="bell-ring" class="w-5 h-5 transition-transform"></i>
       <span>Notifications</span>
     </a>
-    <% if (typeof admin !== 'undefined' && admin?.role === 'SUPER_ADMIN') { %>
-    <a href="/admins" class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
-      <i data-lucide="user-cog" class="w-5 h-5 transition-transform"></i>
-      <span>Administrators</span>
+   <% if (typeof admin !== 'undefined' && admin?.role === 'SUPER_ADMIN') { %>
+
+    <a
+        href="/app-versions"
+        class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
+    >
+        <i
+            data-lucide="smartphone"
+            class="w-5 h-5 transition-transform"
+        ></i>
+
+        <span>App Versions</span>
     </a>
-    <% } %>
+
+    <a
+        href="/admins"
+        class="nav-item group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
+    >
+        <i
+            data-lucide="user-cog"
+            class="w-5 h-5 transition-transform"
+        ></i>
+
+        <span>Administrators</span>
+    </a>
+
+<% } %>
   </nav>
 </aside>
 
