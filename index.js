@@ -13,6 +13,7 @@ import createAuthConfigTable from "./models/authConfigTable.js";
 import authConfigRoutes from "./routes/authConfigRoutes.js";
 import { showAuthSettings } from "./controllers/authConfigController.js";
 import createCurrentAffairsTables from "./models/currentAffairsTables.js";
+import createAwsConfigurationTable from "./models/createAwsConfigurationTable.js";
 import createAdTables from "./models/adTables.js";
 import adRoutes from "./routes/adRoutes.js";
 import currentAffairsApiRoutes from "./routes/currentAffairsApiRoutes.js";
@@ -39,7 +40,8 @@ import createFcmTokenTable from "./models/fcmTokenTable.js";
 import createAppVersionTables from "./models/appVersionTables.js";
 import appVersionRoutes from "./routes/appVersionRoutes.js";
 import appVersionPageRoutes from "./routes/appVersionPageRoutes.js";
-
+import courseOrganizationRoutes from "./routes/courseOrganizationRoutes.js"
+import createCourseFolderTables from './models/createCourseFolderTables.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -71,7 +73,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/ads", adRoutes);
 app.use("/api/v1/current-affairs", currentAffairsApiRoutes);
 app.use("/api/v1/payments", paymentRoutes);
-
+app.use("/organization", requireAdmin, courseOrganizationRoutes);
 app.use("/api/v1/app-version", appVersionRoutes);
 
 app.use("/api/v1", catalogApiRoutes);
@@ -109,6 +111,8 @@ await createPaymentTables();
 await createSocialMediaTables();
 await createFcmTokenTable();
 await createAppVersionTables();
+await createAwsConfigurationTable();
+await createCourseFolderTables();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

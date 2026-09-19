@@ -1,0 +1,272 @@
+<div class="mx-auto space-y-6 mt-8 p-4">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-5">
+    <div>
+      <p class="text-sm font-medium text-violet-600 mb-2 flex items-center gap-2">
+        <a class="underline hover:text-violet-800" href="/organization">All Folders</a>
+        <span class="text-gray-400">/</span>
+        <span class="text-gray-700 font-semibold"><%= folder.folder_name %></span>
+      </p>
+      <h1 class="text-2xl font-bold text-slate-900 mt-1"><%= folder.folder_name %></h1>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-3">
+      <button onclick="openSubfolderModal()" class="bg-white border-2 border-violet-600 text-violet-700 font-semibold px-5 py-2.5 rounded-xl hover:bg-violet-50 transition shadow-sm">
+        + Create Subfolder
+      </button>
+      <button onclick="openAssignVideoModal()" class="bg-violet-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-violet-700 transition shadow-md">
+        Assign Video from S3
+      </button>
+    </div>
+  </div>
+
+  <!-- 30 / 70 Split Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+
+    <!-- LEFT 30% — Linux directory tree style -->
+    <div class="lg:col-span-3">
+      <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden sticky top-4">
+        <div class="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+          <h3 class="font-mono text-xs font-semibold text-gray-700 truncate">~/<%= folder.folder_name %></h3>
+        </div>
+
+        <div class="p-4 font-mono text-sm overflow-x-auto">
+          <div class="tree">
+            <ul>
+              <!-- Root: current folder -->
+              <li class="root-node">
+                <div class="node-row">
+                  <span class="text-violet-500">📁</span>
+                  <span class="font-semibold text-gray-900"><%= folder.folder_name %></span>
+                </div>
+
+                <% if (typeof subfolders !== 'undefined' && subfolders.length > 0) { %>
+                  <ul>
+                    <% subfolders.forEach(function(sub, i) { %>
+                      <li class="<%= i === subfolders.length - 1 && (typeof videos === 'undefined' || videos.length === 0) ? 'last-child' : '' %>">
+                        <a href="/organization/folders-open/<%= sub.id %>" class="node-row hover:bg-violet-50 rounded-lg px-1 -mx-1 transition">
+                          <span class="text-violet-400">📁</span>
+                          <span class="text-gray-700 truncate"><%= sub.folder_name %></span>
+                        </a>
+                      </li>
+                    <% }); %>
+
+                    <% if (typeof videos !== 'undefined' && videos.length > 0) { %>
+                      <% videos.forEach(function(video, i) { %>
+                        <li class="<%= i === videos.length - 1 ? 'last-child' : '' %>">
+                          <div class="node-row">
+                            <span class="text-sky-400">🎬</span>
+                            <span class="text-gray-500 truncate text-xs"><%= video.video_name %></span>
+                          </div>
+                        </li>
+                      <% }); %>
+                    <% } %>
+                  </ul>
+                <% } else if (typeof videos !== 'undefined' && videos.length > 0) { %>
+                  <ul>
+                    <% videos.forEach(function(video, i) { %>
+                      <li class="<%= i === videos.length - 1 ? 'last-child' : '' %>">
+                        <div class="node-row">
+                          <span class="text-sky-400">🎬</span>
+                          <span class="text-gray-500 truncate text-xs"><%= video.video_name %></span>
+                        </div>
+                      </li>
+                    <% }); %>
+                  </ul>
+                <% } else { %>
+                  <p class="text-xs text-gray-400 italic pl-6 mt-1">empty directory</p>
+                <% } %>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT 70% — Normal content (tables) -->
+    <div class="lg:col-span-7 space-y-8">
+
+      <!-- Subfolders List -->
+      <div>
+        <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+          Subfolders
+        </h2>
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
+              <thead class="bg-gray-50 text-gray-700">
+                <tr>
+                  <th class="px-6 py-3 font-medium">Subfolder Name</th>
+                  <th class="px-6 py-3 font-medium">Created Date</th>
+                  <th class="px-6 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 bg-white">
+                <% if (typeof subfolders !== 'undefined' && subfolders.length > 0) { %>
+                  <% subfolders.forEach(function(sub) { %>
+                    <tr class="hover:bg-gray-50 transition cursor-pointer" onclick="window.location.href='/organization/folders-open/<%= sub.id %>'">
+                      <td class="px-6 py-4 flex items-center gap-3">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                          </svg>
+                        </div>
+                        <span class="font-medium text-gray-900"><%= sub.folder_name %></span>
+                      </td>
+                      <td class="px-6 py-4 text-gray-400 text-xs whitespace-nowrap">
+                        <%= sub.created_at ? new Date(sub.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %>
+                      </td>
+                      <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap" onclick="event.stopPropagation()">
+                        <a href="/organization/folders-open/<%= sub.id %>" class="inline-flex items-center gap-1 rounded-lg bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 transition">Open</a>
+                        <button type="button" onclick="deleteSubfolder(<%= sub.id %>, '<%= sub.folder_name %>')" class="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 transition">Delete</button>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="3" class="px-6 py-12 text-center text-gray-500">
+                      <p class="font-medium text-gray-800">No subfolders created yet.</p>
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assigned Videos List -->
+      <div>
+        <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+          Assigned Videos
+        </h2>
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
+              <thead class="bg-gray-50 text-gray-700">
+                <tr>
+                  <th class="px-6 py-3 font-medium">Video Title</th>
+                  <th class="px-6 py-3 font-medium">Description</th>
+                  <th class="px-6 py-3 font-medium">S3</th>
+                  <th class="px-6 py-3 font-medium">Assigned Date</th>
+                  <th class="px-6 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 bg-white">
+                <% if (typeof videos !== 'undefined' && videos.length > 0) { %>
+                  <% videos.forEach(function(video) { %>
+                    <tr class="hover:bg-gray-50 transition">
+                      <td class="px-6 py-4 font-medium text-gray-900"><%= video.video_name %></td>
+                      <td class="px-6 py-4 text-gray-500 truncate max-w-xs"><%= video.video_description || 'No description' %></td>
+                      <td class="px-6 py-4 text-gray-500 truncate max-w-xs"><%= video.s3_key || 'N/A' %></td>
+                      <td class="px-6 py-4 text-gray-400 text-xs whitespace-nowrap">
+                        <%= video.created_at ? new Date(video.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %>
+                      </td>
+                      <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <button type="button"
+                          onclick="openEditVideoModal('<%= video.id %>', '<%= video.video_name.replace(/'/g, "\\'") %>', '<%= (video.video_description || '').replace(/'/g, "\\'") %>', '<%= video.video_icon || '' %>')"
+                          class="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 transition mr-2">
+                          Edit
+                        </button>
+                        <button type="button"
+                          onclick="deleteAssignedVideo('<%= video.id %>')"
+                          class="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 transition">
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                      <p class="font-medium text-gray-800">No videos assigned yet.</p>
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- END RIGHT 70% -->
+  </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- 1. Subfolder Modal -->
+<div id="subfolderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-5">Create Subfolder</h3>
+    <form id="createSubfolderForm">
+      <input type="hidden" id="parentFolderId" value="<%= folder.id %>">
+      <input type="hidden" id="subCourseName" value="<%= folder.course_name %>">
+      <input type="text" id="subfolderName" required placeholder="Subfolder Name" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-5">
+      <div class="flex justify-end gap-3">
+        <button type="button" onclick="closeSubfolderModal()" class="px-5 py-2.5 text-sm bg-gray-100 rounded-xl hover:bg-gray-200 transition">Cancel</button>
+        <button type="submit" class="px-5 py-2.5 text-sm text-white bg-violet-600 rounded-xl hover:bg-violet-700 transition shadow-sm">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 2. Assign Video Modal -->
+<div id="assignVideoModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-5">Assign Video from S3</h3>
+    <form id="assignVideoForm">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Video Title <span class="text-red-500">*</span></label>
+          <input type="text" id="vidName" required placeholder="e.g. Introduction to React" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-violet-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea id="vidDesc" rows="2" placeholder="What is this video about?" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-violet-500"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Video Icon URL (Optional)</label>
+          <input type="url" id="vidIcon" placeholder="https://..." class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-violet-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Select Video from S3 <span class="text-red-500">*</span></label>
+          <select id="vidS3Key" required class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-violet-500 bg-white">
+            <option value="">Loading videos...</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 mt-6">
+        <button type="button" onclick="closeAssignVideoModal()" class="px-5 py-2.5 text-sm bg-gray-100 rounded-xl">Cancel</button>
+        <button type="submit" class="px-5 py-2.5 text-sm text-white bg-violet-600 rounded-xl shadow-md">Assign Video</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .tree ul { list-style: none; margin: 0; padding-left: 1rem; border-left: 1px dashed #d1d5db; }
+  .tree > ul { border-left: none; padding-left: 0; }
+  .tree li { position: relative; padding: 0.15rem 0 0.15rem 0.75rem; }
+  .tree li::before {
+    content: "";
+    position: absolute;
+    top: 0.85rem;
+    left: 0;
+    width: 0.6rem;
+    border-top: 1px dashed #d1d5db;
+  }
+  .node-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.15rem 0.3rem; border-radius: 0.4rem; }
+  .root-node > .node-row { padding-left: 0; }
+</style>
+
+<!-- EXTERNAL JS SCRIPT LINK -->
+<script src="/js/subFolder.js"></script>

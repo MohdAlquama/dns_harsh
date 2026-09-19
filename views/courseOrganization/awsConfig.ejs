@@ -1,0 +1,265 @@
+<div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm  mt-8">
+
+    <!-- Flash Messages for Success/Error -->
+    <% if (saved) { %>
+        <div class="mb-4 rounded-lg bg-green-50 p-4 text-green-800 border border-green-200">
+             AWS Configuration saved successfully!
+        </div>
+    <% } %>
+    <% if (error) { %>
+        <div class="mb-4 rounded-lg bg-red-50 p-4 text-red-800 border border-red-200">
+             <%= error %>
+        </div>
+    <% } %>
+
+    <!-- Header -->
+    <div class="mb-6 border-b border-gray-200 pb-4">
+        <h2 class="text-xl font-semibold text-gray-900">AWS S3 & CDN Configuration</h2>
+        <p class="mt-1 text-sm text-gray-500">Choose how your files should be stored and delivered.</p>
+    </div>
+
+    <!-- Storage Type -->
+    <div class="mb-6">
+        <label class="mb-3 block text-sm font-medium text-gray-700">Storage & Delivery Type</label>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <!-- S3 Only -->
+            <label class="storage-option flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition" data-type="s3">
+                <input type="radio" name="storage_type" value="s3" class="mt-1 h-4 w-4" 
+                    <%= (!awsConfig || awsConfig.storage_type === 's3') ? 'checked' : '' %>>
+                <div>
+                    <div class="font-medium text-gray-900">S3 Only</div>
+                    <p class="mt-1 text-sm text-gray-500">Store and serve files directly from AWS S3.</p>
+                </div>
+            </label>
+
+            <!-- S3 + CDN -->
+            <label class="storage-option flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition" data-type="s3_cdn">
+                <input type="radio" name="storage_type" value="s3_cdn" class="mt-1 h-4 w-4"
+                    <%= (awsConfig && awsConfig.storage_type === 's3_cdn') ? 'checked' : '' %>>
+                <div>
+                    <div class="font-medium text-gray-900">S3 + CDN</div>
+                    <p class="mt-1 text-sm text-gray-500">Store files in S3 and deliver them through CDN.</p>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    <!-- AWS S3 Configuration Fields -->
+    <div class="space-y-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700">AWS Access Key</label>
+                <input type="text" name="aws_access_key" placeholder="Enter AWS access key"
+                    value="<%= awsConfig ? awsConfig.access_key_id : '' %>"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-indigo-500">
+            </div>
+
+            <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700">AWS Secret Key</label>
+                <input type="password" name="aws_secret_key" placeholder="Enter AWS secret key"
+                    value="<%= awsConfig ? awsConfig.secret_access_key : '' %>"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-indigo-500">
+            </div>
+
+            <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700">AWS Region <span class="text-red-500">*</span></label>
+                <input type="text" name="aws_region" placeholder="ap-south-1" required
+                    value="<%= awsConfig ? (awsConfig.region || 'ap-south-1') : 'ap-south-1' %>"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-indigo-500">
+            </div>
+
+            <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700">S3 Bucket Name <span class="text-red-500">*</span></label>
+                <input type="text" name="aws_bucket" placeholder="my-video-bucket" required
+                    value="<%= awsConfig ? awsConfig.bucket_name : '' %>"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-indigo-500">
+            </div>
+        </div>
+
+        <!-- CDN Configuration -->
+        <div id="cdnConfiguration" class="hidden rounded-xl border border-indigo-100 bg-indigo-50/40 p-5">
+            <h3 class="text-base font-semibold text-gray-900 mb-4">CDN Configuration</h3>
+            <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700">CDN URL <span class="text-red-500">*</span></label>
+                <input type="url" id="cdnUrl" name="cdn_url" placeholder="https://cdn.example.com" disabled
+                    value="<%= awsConfig ? awsConfig.cdn_url : '' %>"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-indigo-500 disabled:bg-gray-100">
+                <p id="cdnError" class="mt-1 hidden text-sm text-red-500">A valid CDN URL is required.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-6 flex justify-end gap-4">
+        <!-- New Test Button -->
+        <button type="button" id="testConnection" class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+            Test Connection
+        </button>
+
+        <button type="button" id="saveConfiguration" class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700">
+            Save Configuration
+        </button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const storageRadios = document.querySelectorAll('input[name="storage_type"]');
+    const storageOptions = document.querySelectorAll('.storage-option');
+    const cdnConfiguration = document.getElementById('cdnConfiguration');
+    const cdnUrl = document.getElementById('cdnUrl');
+    const cdnError = document.getElementById('cdnError');
+    const saveButton = document.getElementById('saveConfiguration');
+    const testButton = document.getElementById('testConnection'); // Test button reference
+
+    // UI Toggle Function
+    function updateStorageType() {
+        const selected = document.querySelector('input[name="storage_type"]:checked');
+        if (!selected) return;
+        
+        const storageType = selected.value;
+
+        storageOptions.forEach(opt => {
+            opt.classList.remove('border-indigo-500', 'bg-indigo-50');
+            opt.classList.add('border-gray-200', 'bg-white');
+        });
+
+        const selectedOption = selected.closest('.storage-option');
+        selectedOption.classList.add('border-indigo-500', 'bg-indigo-50');
+        selectedOption.classList.remove('border-gray-200', 'bg-white');
+
+        if (storageType === 's3_cdn') {
+            cdnConfiguration.classList.remove('hidden');
+            cdnUrl.disabled = false;
+        } else {
+            cdnConfiguration.classList.add('hidden');
+            cdnUrl.disabled = true;
+            cdnError.classList.add('hidden');
+            cdnUrl.classList.remove('border-red-500');
+        }
+    }
+
+    storageRadios.forEach(radio => radio.addEventListener('change', updateStorageType));
+    cdnUrl.addEventListener('input', () => {
+        if(cdnUrl.value.trim() !== '') {
+            cdnError.classList.add('hidden');
+            cdnUrl.classList.remove('border-red-500');
+        }
+    });
+
+    // ----------------------------------------------------
+    // TEST CONNECTION ACTION (NEW)
+    // ----------------------------------------------------
+    testButton.addEventListener('click', function () {
+        const region = document.querySelector('[name="aws_region"]').value.trim();
+        const bucket = document.querySelector('[name="aws_bucket"]').value.trim();
+        const accessKey = document.querySelector('[name="aws_access_key"]').value.trim();
+        const secretKey = document.querySelector('[name="aws_secret_key"]').value.trim();
+
+        if (!region || !bucket || !accessKey || !secretKey) {
+            alert("Please fill in Access Key, Secret Key, Region, and S3 Bucket Name to test the connection.");
+            return;
+        }
+
+        const payload = {
+            aws_access_key: accessKey,
+            aws_secret_key: secretKey,
+            aws_region: region,
+            aws_bucket: bucket
+        };
+
+        const originalText = testButton.textContent;
+        testButton.disabled = true;
+        testButton.textContent = "Testing...";
+
+        fetch('/organization/aws/config/test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(" " + data.message);
+            } else {
+                alert(" " + data.error);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert(" An unexpected error occurred while testing.");
+        })
+        .finally(() => {
+            testButton.disabled = false;
+            testButton.textContent = originalText;
+        });
+    });
+
+    // ----------------------------------------------------
+    // SAVE ACTION
+    // ----------------------------------------------------
+    saveButton.addEventListener('click', function () {
+        const storageType = document.querySelector('input[name="storage_type"]:checked').value;
+        const cdnVal = cdnUrl.value.trim();
+        const region = document.querySelector('[name="aws_region"]').value.trim();
+        const bucket = document.querySelector('[name="aws_bucket"]').value.trim();
+
+        // Basic Frontend Validation
+        if (!region || !bucket) {
+            alert("Region and Bucket Name are required.");
+            return;
+        }
+
+        if (storageType === 's3_cdn') {
+            try {
+                new URL(cdnVal); // Simple URL validity check
+            } catch (e) {
+                cdnError.classList.remove('hidden');
+                cdnUrl.classList.add('border-red-500');
+                cdnUrl.focus();
+                return;
+            }
+        }
+
+        // Prepare Payload
+        const payload = {
+            storage_type: storageType,
+            aws_access_key: document.querySelector('[name="aws_access_key"]').value.trim(),
+            aws_secret_key: document.querySelector('[name="aws_secret_key"]').value.trim(),
+            aws_region: region,
+            aws_bucket: bucket,
+            cdn_url: storageType === 's3_cdn' ? cdnVal : null
+        };
+
+        // UI Loading State
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
+
+        // Send POST Request
+        fetch(window.location.pathname, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to append ?saved=1 to trigger EJS success banner
+                window.location.href = window.location.pathname + '?saved=1';
+            } else {
+                alert(data.error || "Failed to save.");
+                saveButton.disabled = false;
+                saveButton.textContent = "Save Configuration";
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("An unexpected error occurred.");
+            saveButton.disabled = false;
+            saveButton.textContent = "Save Configuration";
+        });
+    });
+
+    updateStorageType();
+});
+</script>
