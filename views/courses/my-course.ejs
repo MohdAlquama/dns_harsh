@@ -1,0 +1,63 @@
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex flex-col md:flex-row gap-6 bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+        <% if (course.cover_image_url) { %>
+            <img
+                src="<%= course.cover_image_url %>"
+                alt="<%= course.course_name %>"
+                class="w-full md:w-64 h-40 object-cover rounded-2xl"
+            >
+        <% } %>
+
+        <div class="flex-1">
+            <p class="text-sm font-medium text-violet-600">
+                <%= course.subject_name || "Course" %>
+            </p>
+            <h1 class="text-2xl font-bold text-slate-900 mt-1">
+                <%= course.course_name %>
+            </h1>
+            <p class="text-slate-500 mt-3">
+                <%= course.short_description || "" %>
+            </p>
+
+            <div class="mt-5 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                <p class="font-semibold text-blue-900">
+                    Learn in DNS Education App
+                </p>
+                <p class="text-sm text-blue-700 mt-1">
+                    Course videos are available through the DNS app. This website does not play course videos.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-xl font-bold text-slate-900">Chapters</h2>
+        <p class="text-sm text-slate-500 mt-1">
+            These chapters come directly from Organization.
+        </p>
+
+        <div class="mt-5 space-y-3">
+            <% if (chapters.length) { %>
+                <% chapters.forEach((chapter, index) => { %>
+                    <div class="flex items-center gap-4 rounded-2xl border border-slate-200 p-4">
+                        <div class="w-10 h-10 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center font-bold">
+                            <%= index + 1 %>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-900">
+                                <%= chapter.chapter_name %>
+                            </p>
+                            <p class="text-xs text-slate-500 mt-1">
+                                Video lessons available in the DNS app
+                            </p>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="rounded-2xl border border-slate-200 p-5 text-sm text-slate-500">
+                    No chapters have been added to this subject in Organization yet.
+                </div>
+            <% } %>
+        </div>
+    </section>
+</div>

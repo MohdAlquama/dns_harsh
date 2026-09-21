@@ -1,0 +1,343 @@
+<div class="max-w mx-auto space-y-6">
+
+    <!-- HEADER -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+        <div>
+
+            <p class="text-sm font-medium text-violet-600">
+                Course management
+            </p>
+
+            <h1 class="text-2xl font-bold text-slate-900 mt-1">
+                Courses
+            </h1>
+
+            <p class="text-sm text-slate-500 mt-1">
+                Manage courses, subjects, pricing and course content.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/courses/create"
+            class="inline-flex items-center justify-center gap-2 bg-violet-600 text-white font-semibold px-5 py-3 rounded-2xl hover:bg-violet-700 transition shadow-md shadow-violet-200"
+        >
+
+            <i
+                data-lucide="plus-circle"
+                class="w-4 h-4"
+            ></i>
+
+            New Course
+
+        </a>
+
+    </div>
+
+
+    <!-- SUCCESS -->
+    <% if (typeof success !== "undefined" && success) { %>
+
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+
+            <%= success %>
+
+        </div>
+
+    <% } %>
+
+
+    <!-- ERROR -->
+    <% if (typeof error !== "undefined" && error) { %>
+
+        <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+
+            <%= error %>
+
+        </div>
+
+    <% } %>
+
+
+    <!-- COURSES TABLE -->
+    <section class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+
+        <% if (!Array.isArray(courses) || courses.length === 0) { %>
+
+            <!-- EMPTY STATE -->
+
+            <div class="px-6 py-16 text-center">
+
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-violet-100 flex items-center justify-center">
+
+                    <i
+                        data-lucide="book-open"
+                        class="w-7 h-7 text-violet-600"
+                    ></i>
+
+                </div>
+
+
+                <h2 class="font-semibold text-slate-800 mt-4">
+                    No Courses Yet
+                </h2>
+
+
+                <p class="text-sm text-slate-500 mt-1">
+                    Create your first course to add pricing and course content.
+                </p>
+
+
+                <a
+                    href="/courses/create"
+                    class="inline-flex items-center gap-2 mt-5 bg-violet-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-violet-700 transition"
+                >
+
+                    <i
+                        data-lucide="plus"
+                        class="w-4 h-4"
+                    ></i>
+
+                    Create Course
+
+                </a>
+
+            </div>
+
+
+        <% } else { %>
+
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-sm">
+
+                    <!-- TABLE HEADER -->
+
+                    <thead class="bg-slate-50 text-left text-slate-500">
+
+                        <tr>
+
+                            <th class="px-5 py-4 font-semibold">
+                                Course
+                            </th>
+
+                            <th class="px-5 py-4 font-semibold">
+                                Subject
+                            </th>
+
+                            <th class="px-5 py-4 font-semibold">
+                                Price
+                            </th>
+
+                            <th class="px-5 py-4 font-semibold">
+                                Status
+                            </th>
+
+                            <th class="px-5 py-4 font-semibold text-right">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <!-- TABLE BODY -->
+
+                    <tbody class="divide-y divide-slate-100">
+
+                        <% courses.forEach((course) => { %>
+
+                            <tr class="hover:bg-slate-50/70 transition">
+
+
+                                <!-- COURSE -->
+
+                                <td class="px-5 py-4">
+
+                                    <p class="font-semibold text-slate-800">
+
+                                        <%= course.course_name || "Untitled Course" %>
+
+                                    </p>
+
+
+                                    <p class="text-xs text-slate-400 mt-1">
+
+                                        ID:
+                                        <%= course.id %>
+
+                                    </p>
+
+                                </td>
+
+
+                                <!-- SUBJECT -->
+
+                                <td class="px-5 py-4">
+
+                                    <p class="font-medium text-slate-700">
+
+                                        <%= course.subject_name ||
+                                            course.folder_name ||
+                                            course.subject_folder_name ||
+                                            "Subject not found" %>
+
+                                    </p>
+
+                                </td>
+
+
+                                <!-- PRICE -->
+
+                                <td class="px-5 py-4 font-medium text-slate-700">
+
+                                    ₹<%= Number(
+                                        course.price || 0
+                                    ).toLocaleString(
+                                        "en-IN",
+                                        {
+                                            minimumFractionDigits: 2
+                                        }
+                                    ) %>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td class="px-5 py-4">
+
+                                    <%
+                                        const courseStatus =
+                                            String(
+                                                course.status || "DRAFT"
+                                            ).toUpperCase();
+                                    %>
+
+
+                                    <span
+                                        class="
+                                            inline-flex
+                                            px-2.5
+                                            py-1
+                                            rounded-full
+                                            text-xs
+                                            font-semibold
+
+                                            <%= courseStatus === "PUBLISHED"
+                                                ? "bg-emerald-100 text-emerald-700"
+                                                : "bg-slate-100 text-slate-600"
+                                            %>
+                                        "
+                                    >
+
+                                        <%= courseStatus.replace(
+                                            "_",
+                                            " "
+                                        ) %>
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td class="px-5 py-4">
+
+                                    <div class="flex items-center justify-end gap-2">
+
+
+                                        <!-- EDIT -->
+
+                                        <a
+                                            href="/courses/<%= course.id %>/edit"
+                                            class="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-50 transition"
+                                        >
+
+                                            <i
+                                                data-lucide="pencil"
+                                                class="w-3.5 h-3.5"
+                                            ></i>
+
+                                            Edit
+
+                                        </a>
+
+
+                                        <!-- PUBLISH -->
+
+                                        <% if (courseStatus !== "PUBLISHED") { %>
+
+                                            <form
+                                                action="/courses/<%= course.id %>/publish"
+                                                method="POST"
+                                                onsubmit="return confirm('Publish this course?');"
+                                            >
+
+                                                <button
+                                                    type="submit"
+                                                    class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 transition"
+                                                >
+
+                                                    <i
+                                                        data-lucide="upload"
+                                                        class="w-3.5 h-3.5"
+                                                    ></i>
+
+                                                    Publish
+
+                                                </button>
+
+                                            </form>
+
+                                        <% } %>
+
+
+                                        <!-- DELETE -->
+
+                                        <form
+                                            action="/courses/<%= course.id %>/delete"
+                                            method="POST"
+                                            onsubmit="return confirm('Delete this course? This cannot be undone.');"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 transition"
+                                            >
+
+                                                <i
+                                                    data-lucide="trash-2"
+                                                    class="w-3.5 h-3.5"
+                                                ></i>
+
+                                                Delete
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        <% }) %>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        <% } %>
+
+    </section>
+
+</div>

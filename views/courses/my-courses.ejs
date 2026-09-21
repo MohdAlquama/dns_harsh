@@ -1,0 +1,113 @@
+<div class="min-h-screen bg-slate-50">
+
+    <div class="max-w-7xl mx-auto px-4 py-10">
+
+        <div class="mb-8">
+
+            <p class="text-sm font-semibold text-violet-600">
+                DNS Academy
+            </p>
+
+            <h1 class="mt-1 text-3xl font-bold text-slate-900">
+                My Courses
+            </h1>
+
+            <p class="mt-2 text-slate-500">
+                Your purchased courses
+            </p>
+
+        </div>
+
+
+        <% if (!courses.length) { %>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+
+                <h2 class="text-xl font-bold text-slate-900">
+                    No Courses Yet
+                </h2>
+
+                <p class="mt-2 text-slate-500">
+                    You have not purchased any course yet.
+                </p>
+
+                <a
+                    href="/courses-store"
+                    class="inline-block mt-6 px-6 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700"
+                >
+                    Browse Courses
+                </a>
+
+            </div>
+
+        <% } else { %>
+
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <% courses.forEach((course) => { %>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+
+                        <% if (course.cover_image_url) { %>
+
+                            <img
+                                src="<%= course.cover_image_url %>"
+                                alt="<%= course.course_name %>"
+                                class="w-full h-48 object-cover"
+                            >
+
+                        <% } else { %>
+
+                            <div class="w-full h-48 bg-violet-100 flex items-center justify-center">
+
+                                <span class="text-violet-600 font-bold">
+                                    DNS Academy
+                                </span>
+
+                            </div>
+
+                        <% } %>
+
+
+                        <div class="p-5">
+
+                            <p class="text-sm font-semibold text-violet-600">
+                                <%= course.subject_name || "Course" %>
+                            </p>
+
+
+                            <h2 class="mt-2 text-xl font-bold text-slate-900">
+                                <%= course.course_name %>
+                            </h2>
+
+
+                            <% if (course.short_description) { %>
+
+                                <p class="mt-2 text-sm text-slate-500 line-clamp-2">
+                                    <%= course.short_description %>
+                                </p>
+
+                            <% } %>
+
+
+                            <a
+                                href="/my-courses/<%= course.id %>"
+                                class="mt-5 block w-full text-center px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700"
+                            >
+                                Continue Learning
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                <% }) %>
+
+            </div>
+
+        <% } %>
+
+    </div>
+
+</div>

@@ -1,5 +1,6 @@
 import db from "../config/db.js";
 import { lockOfferForRedemption } from "./offerCodeModel.js";
+import courseEnrollmentModel from "./courseEnrollmentModel.js";
 
 const getPaymentConfig = async () => {
     const [rows] = await db.execute(`SELECT * FROM payment_gateway_config WHERE id = 1`);
@@ -109,31 +110,163 @@ const findOwnedPaidItem = async (userId, itemType, itemId) => {
 };
 
 const markOrderFromGateway = async (merchantOrderId, update) => {
+
     const connection = await db.getConnection();
+
     try {
+
         await connection.beginTransaction();
-        const [orders] = await connection.execute(`SELECT id FROM payment_orders WHERE merchant_order_id = ? FOR UPDATE`, [merchantOrderId]);
-        await connection.execute(
-            `UPDATE payment_orders SET status = ?, cashfree_payment_id = COALESCE(?, cashfree_payment_id),
-             payment_method = COALESCE(?, payment_method), failure_message = ?,
-             paid_at = CASE WHEN ? = 'PAID' THEN COALESCE(paid_at, NOW()) ELSE paid_at END
-             WHERE merchant_order_id = ?`,
-            [update.status, update.paymentId || null, update.paymentMethod || null,
-                update.failureMessage || null, update.status, merchantOrderId]
+
+
+        // =================================================
+        // GET & LOCK ORDER
+        // =================================================
+
+        const [orders] = await connection.execute(
+            `
+            SELECT
+                id,
+                user_id,
+                item_type,
+                item_id,
+                item_name,
+                status
+            FROM payment_orders
+            WHERE merchant_order_id = ?
+            LIMIT 1
+            FOR UPDATE
+            `,
+            [
+                merchantOrderId
+            ]
         );
-        if (orders[0]) {
-            if (update.status === "PAID") await connection.execute(
-                `UPDATE payment_offer_redemptions SET status = 'REDEEMED' WHERE order_id = ? AND status = 'RESERVED'`, [orders[0].id]
-            );
-            if (["FAILED", "EXPIRED", "USER_DROPPED"].includes(update.status)) await connection.execute(
-                `UPDATE payment_offer_redemptions SET status = 'RELEASED' WHERE order_id = ? AND status = 'RESERVED'`, [orders[0].id]
+
+
+        const order = orders[0];
+
+
+        if (!order) {
+
+            await connection.rollback();
+
+            throw new Error(
+                `Payment order not found: ${merchantOrderId}`
             );
         }
+
+
+        // =================================================
+        // UPDATE PAYMENT ORDER
+        // =================================================
+
+        await connection.execute(
+            `
+            UPDATE payment_orders
+            SET
+                status = ?,
+                cashfree_payment_id =
+                    COALESCE(?, cashfree_payment_id),
+                payment_method =
+                    COALESCE(?, payment_method),
+                failure_message = ?,
+                paid_at =
+                    CASE
+                        WHEN ? = 'PAID'
+                        THEN COALESCE(paid_at, NOW())
+                        ELSE paid_at
+                    END
+            WHERE merchant_order_id = ?
+            `,
+            [
+                update.status,
+                update.paymentId || null,
+                update.paymentMethod || null,
+                update.failureMessage || null,
+                update.status,
+                merchantOrderId
+            ]
+        );
+
+
+        // =================================================
+        // OFFER CODE STATUS
+        // =================================================
+
+        if (update.status === "PAID") {
+
+            await connection.execute(
+                `
+                UPDATE payment_offer_redemptions
+                SET status = 'REDEEMED'
+                WHERE order_id = ?
+                  AND status = 'RESERVED'
+                `,
+                [
+                    order.id
+                ]
+            );
+        }
+
+
+        if (
+            [
+                "FAILED",
+                "EXPIRED",
+                "USER_DROPPED"
+            ].includes(update.status)
+        ) {
+
+            await connection.execute(
+                `
+                UPDATE payment_offer_redemptions
+                SET status = 'RELEASED'
+                WHERE order_id = ?
+                  AND status = 'RESERVED'
+                `,
+                [
+                    order.id
+                ]
+            );
+        }
+
+
+        // =================================================
+        // COURSE ENROLLMENT
+        // =================================================
+        // Only successful COURSE payments create enrollment.
+        // =================================================
+
+        if (
+            update.status === "PAID" &&
+            order.item_type === "COURSE"
+        ) {
+
+            await courseEnrollmentModel.enrollUserWithConnection(
+                connection,
+                {
+                    userId: order.user_id,
+                    courseId: order.item_id,
+                    orderId: order.id
+                }
+            );
+        }
+
+
+        // =================================================
+        // COMMIT
+        // =================================================
+
         await connection.commit();
+
+
     } catch (error) {
+
         await connection.rollback();
+
         throw error;
+
     } finally {
+
         connection.release();
     }
 };
