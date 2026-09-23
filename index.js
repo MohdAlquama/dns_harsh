@@ -92,14 +92,19 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/ads", adRoutes);
 
 app.use("/api/v1/current-affairs", currentAffairsApiRoutes);
-app.use("/", requireAdmin, currentAffairsRoutes);
 
 app.use("/api/v1/payments", paymentRoutes);
 app.get("/payment/return", showPaymentReturn);
+
 app.use("/organization", requireAdmin, courseOrganizationRoutes);
 
-
+// All API routes must come before catch-all "/" admin routes
 app.use("/api/v1", catalogApiRoutes);
+app.use("/api/v1", courseApiRoutes);
+app.use("/api/v1/course-payments", coursePaymentRoutes);
+
+// Admin HTML routes
+app.use("/", requireAdmin, currentAffairsRoutes);
 app.use("/", requireAdmin, catalogAdminRoutes);
 
 app.use("/api/notifications", notificationRoutes);
@@ -115,10 +120,10 @@ app.use("/", requireAdmin, paymentAdminRoutes);
 app.use("/", requireAdmin, adminManagementRoutes);
 app.use("/", requireAdmin, userRoutes);
 
-app.use("/api/v1", courseApiRoutes);
+
 app.use("/", courseLearningRoutes);
 
-app.use("/api/v1/course-payments", coursePaymentRoutes);
+
 app.use("/", courseRoutes);
 
 app.get("/", (req, res) => {
