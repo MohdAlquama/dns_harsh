@@ -291,26 +291,46 @@ export const getCourse = async (req, res) => {
                 id: course.id,
                 name: course.course_name,
                 slug: course.slug,
+
                 subject: {
                     id: course.subject_folder_id,
                     name: course.subject_name
                 },
+
                 description: {
                     short: course.short_description,
                     long: course.long_description
                 },
+
                 imageUrl: course.cover_image_url,
                 price: Number(course.price),
                 currency: "INR",
+
+                pricing: publicPrice(course),
+
+                offer: course.offer?.is_active
+                    ? {
+                        id: course.offer.id,
+                        name: course.offer.offer_name,
+                        type: course.offer.discount_type,
+                        value: Number(course.offer.discount_value || 0),
+                        active: Boolean(course.offer.is_active)
+                    }
+                    : null,
+
+                status: course.status,
+
                 purchase: {
                     available: true,
                     requiresLogin: true,
-                    createOrderEndpoint: "/api/v1/course-payments/orders"
+                    createOrderEndpoint:
+                        "/api/v1/course-payments/orders"
                 }
             }
         });
     } catch (error) {
         console.error("Get course API error:", error);
+
         return res.status(500).json({
             success: false,
             message: "Unable to load course"
