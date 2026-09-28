@@ -88,12 +88,39 @@ const createOrder = async (req, res) => {
         }
 
         merchantOrderId = `dns_${Date.now()}_${crypto.randomBytes(5).toString("hex")}`;
-        await createLocalOrder({
-            merchantOrderId, userId: req.user.id, itemType: "CURRENT_AFFAIRS", itemId: course.id,
-            itemName: course.course_name, baseAmount: price.base, discountAmount: price.discount,
-            gstAmount: price.gst, platformAmount: price.platform, orderAmount: price.total,
-            offer
-        });
+       await createLocalOrder({
+    merchantOrderId,
+
+    userId:
+        req.user.id,
+
+    itemType:
+        "COURSE",
+
+    itemId:
+        course.id,
+
+    itemName:
+        course.course_name,
+
+    baseAmount:
+        price.base,
+
+    discountAmount:
+        price.discount,
+
+    gstAmount:
+        price.gst,
+
+    platformAmount:
+        price.platform,
+
+    orderAmount:
+        price.total,
+
+    offer:
+        offer
+});
         const gatewayOrder = await createCashfreeOrder({
             merchantOrderId, amount: price.total, customer: req.user, itemName: course.course_name,
             origin: `${req.protocol}://${req.get("host")}`

@@ -5,6 +5,7 @@ import requireAuth
 
 import {
     createCoursePaymentOrder,
+    validateCourseOffer,
     verifyCoursePayment
 } from "../controllers/coursePaymentController.js";
 
@@ -17,6 +18,12 @@ router.post(
     "/orders",
     requireAuth,
     createCoursePaymentOrder
+);
+
+router.post(
+    "/offers/validate",
+    requireAuth,
+    validateCourseOffer
 );
 
 

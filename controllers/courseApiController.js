@@ -17,6 +17,67 @@ import {
     getS3ClientAndConfig
 } from "./courseOrganization/utils/s3.js";
 
+const roundMoney = (value) =>
+    Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+
+const publicPrice = (course) => {
+    const pricing = course.pricing || {};
+
+    const base = roundMoney(
+        pricing.base_price ?? course.price
+    );
+
+    const offer = course.offer?.is_active
+        ? course.offer
+        : null;
+
+    let discount = 0;
+
+    if (offer) {
+        discount =
+            offer.discount_type === "PERCENT"
+                ? roundMoney(
+                    (base * Number(offer.discount_value || 0)) / 100
+                )
+                : roundMoney(
+                    offer.discount_value || 0
+                );
+
+        discount = Math.min(base, discount);
+    }
+
+    const taxable = roundMoney(
+        base - discount
+    );
+
+    const gst =
+        Number(pricing.gst_enabled) &&
+        Number(pricing.gst_percent) > 0
+            ? roundMoney(
+                (taxable * Number(pricing.gst_percent)) / 100
+            )
+            : 0;
+
+    const platform =
+        Number(pricing.platform_charge_enabled)
+            ? roundMoney(
+                pricing.platform_charge || 0
+            )
+            : 0;
+
+    return {
+        base,
+        discount,
+        taxable,
+        gst,
+        platform,
+        total: roundMoney(
+            taxable + gst + platform
+        ),
+        currency: "INR"
+    };
+};
+
 const getActiveEnrollment = async (userId, courseId) => {
     const [rows] = await db.execute(
         `
@@ -74,26 +135,133 @@ export const getCourses = async (req, res) => {
 
         return res.json({
             success: true,
-            data: courses.map(course => ({
-                id: course.id,
-                name: course.course_name,
-                slug: course.slug,
-                subject: {
-                    id: course.subject_folder_id,
-                    name: course.subject_name
-                },
-                description: {
-                    short: course.short_description,
-                    long: course.long_description
-                },
-                imageUrl: course.cover_image_url,
-                price: Number(course.price),
-                currency: "INR",
-                status: course.status
-            }))
+
+            data: courses.map(course => {
+                const pricing = course.pricing || {};
+
+                const base = roundMoney(
+                    pricing.base_price ?? course.price
+                );
+
+                const offer = course.offer?.is_active
+                    ? course.offer
+                    : null;
+
+                let discount = 0;
+
+                if (offer) {
+                    discount =
+                        offer.discount_type === "PERCENT"
+                            ? roundMoney(
+                                (base * Number(offer.discount_value || 0)) / 100
+                            )
+                            : roundMoney(
+                                offer.discount_value || 0
+                            );
+
+                    discount = Math.min(base, discount);
+                }
+
+                const taxable = roundMoney(
+                    base - discount
+                );
+
+                const gst =
+                    Number(pricing.gst_enabled) &&
+                    Number(pricing.gst_percent) > 0
+                        ? roundMoney(
+                            (taxable * Number(pricing.gst_percent)) / 100
+                        )
+                        : 0;
+
+                const platform =
+                    Number(pricing.platform_charge_enabled)
+                        ? roundMoney(
+                            pricing.platform_charge || 0
+                        )
+                        : 0;
+
+                const total = roundMoney(
+                    taxable + gst + platform
+                );
+
+                return {
+                    id: course.id,
+
+                    name: course.course_name,
+
+                    slug: course.slug,
+
+                    subject: {
+                        id: course.subject_folder_id,
+                        name: course.subject_name
+                    },
+
+                    description: {
+                        short: course.short_description,
+                        long: course.long_description
+                    },
+
+                    imageUrl: course.cover_image_url,
+
+                    price: Number(course.price),
+
+                    currency: "INR",
+
+                    pricing: {
+                        base,
+                        discount,
+                        taxable,
+                        gst,
+                        platform,
+                        total,
+
+                        gstPercent:
+                            Number(
+                                pricing.gst_enabled
+                                    ? pricing.gst_percent || 0
+                                    : 0
+                            ),
+
+                        platformChargeEnabled:
+                            Boolean(
+                                pricing.platform_charge_enabled
+                            )
+                    },
+
+                    offer: offer
+                        ? {
+                            id: offer.id,
+
+                            name:
+                                offer.offer_name,
+
+                            type:
+                                offer.discount_type,
+
+                            value:
+                                Number(
+                                    offer.discount_value || 0
+                                ),
+
+                            active:
+                                Boolean(
+                                    offer.is_active
+                                )
+                        }
+                        : null,
+
+                    status: course.status
+                };
+            })
         });
+
     } catch (error) {
-        console.error("Get courses API error:", error);
+        console.error(
+            "Get courses API error:",
+            error
+        );
+
         return res.status(500).json({
             success: false,
             message: "Unable to load courses"

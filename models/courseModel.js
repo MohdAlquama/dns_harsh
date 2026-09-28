@@ -452,5 +452,12 @@ export const getPublishedCourseById = async (courseId) => {
         [id]
     );
 
-    return rows[0] || null;
+    if (!rows[0]) return null;
+
+const course = rows[0];
+
+course.pricing = await getCoursePricing(id);
+course.offer = await getCourseOffer(id);
+
+return course;
 };
