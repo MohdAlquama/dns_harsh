@@ -368,37 +368,39 @@ export const createCoursePaymentOrder = async (req, res) => {
         // CREATE LOCAL ORDER
         // =================================================
 
-        await createLocalOrder({
+       await createLocalOrder({
+    merchantOrderId,
 
-            merchantOrderId,
+    userId:
+        req.user.id,
 
-            userId:
-                req.user.id,
+    itemType:
+        "COURSE",
 
-            itemType:
-                "COURSE",
+    itemId:
+        course.id,
 
-            itemId:
-                course.id,
+    itemName:
+        course.course_name,
 
-            itemName:
-                course.course_name,
+    baseAmount:
+        price.base,
 
-            baseAmount:
-                price.base,
+    discountAmount:
+        price.discount,
 
-            discountAmount:
-                price.discount,
+    gstAmount:
+        price.gst,
 
-            gstAmount:
-                price.gst,
+    platformAmount:
+        price.platform,
 
-            platformAmount:
-                price.platform,
+    orderAmount:
+        price.total,
 
-            orderAmount:
-                price.total
-        });
+    offer:
+        offer
+});
 
 
         // =================================================
