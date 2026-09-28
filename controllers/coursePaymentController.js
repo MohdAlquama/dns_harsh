@@ -5,6 +5,11 @@ import {
 } from "../models/courseModel.js";
 
 import {
+    findOfferByCode,
+    OfferCodeError
+} from "../models/offerCodeModel.js";
+
+import {
     createLocalOrder,
     activateLocalOrder,
     failLocalOrder,
@@ -21,6 +26,205 @@ import {
 
 
 // =====================================================
+// MONEY HELPER
+// =====================================================
+
+const roundMoney = (value) =>
+    Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+
+
+// =====================================================
+// COURSE PRICE CALCULATOR
+// =====================================================
+
+const calculateCoursePrice = (
+    course,
+    offerCode = null
+) => {
+
+    const pricing = course.pricing || {};
+
+    const base = roundMoney(
+        pricing.base_price ?? course.price
+    );
+
+
+    // =================================================
+    // AUTOMATIC COURSE OFFER
+    // =================================================
+
+    let courseDiscount = 0;
+
+    if (course.offer?.is_active) {
+
+        courseDiscount =
+            course.offer.discount_type === "PERCENT"
+
+                ? roundMoney(
+                    (
+                        base *
+                        Number(
+                            course.offer.discount_value || 0
+                        )
+                    ) / 100
+                )
+
+                : roundMoney(
+                    course.offer.discount_value || 0
+                );
+
+        courseDiscount = Math.min(
+            base,
+            courseDiscount
+        );
+    }
+
+
+    // =================================================
+    // OFFER CODE
+    // =================================================
+
+    let offerCodeDiscount = 0;
+
+    if (offerCode) {
+
+        // If offer code cannot stack with
+        // automatic course offer
+        if (!offerCode.stack_with_course_offer) {
+            courseDiscount = 0;
+        }
+
+        const offerBasis = roundMoney(
+            base - courseDiscount
+        );
+
+
+        offerCodeDiscount =
+            offerCode.discount_type === "PERCENT"
+
+                ? roundMoney(
+                    (
+                        offerBasis *
+                        Number(
+                            offerCode.discount_value || 0
+                        )
+                    ) / 100
+                )
+
+                : roundMoney(
+                    offerCode.discount_value || 0
+                );
+
+
+        // Maximum discount limit
+        if (offerCode.max_discount_amount !== null) {
+
+            offerCodeDiscount = Math.min(
+                offerCodeDiscount,
+                Number(
+                    offerCode.max_discount_amount
+                )
+            );
+        }
+
+
+        // Discount cannot be greater
+        // than remaining amount
+        offerCodeDiscount = Math.min(
+            offerBasis,
+            roundMoney(offerCodeDiscount)
+        );
+    }
+
+
+    // =================================================
+    // TOTAL DISCOUNT
+    // =================================================
+
+    const discount = roundMoney(
+        courseDiscount +
+        offerCodeDiscount
+    );
+
+
+    // =================================================
+    // TAXABLE AMOUNT
+    // =================================================
+
+    const taxable = roundMoney(
+        base - discount
+    );
+
+
+    // =================================================
+    // GST
+    // =================================================
+
+    const gst =
+        Number(pricing.gst_enabled) &&
+        Number(pricing.gst_percent) > 0
+
+            ? roundMoney(
+                (
+                    taxable *
+                    Number(
+                        pricing.gst_percent
+                    )
+                ) / 100
+            )
+
+            : 0;
+
+
+    // =================================================
+    // PLATFORM CHARGE
+    // =================================================
+
+    const platform =
+        Number(pricing.platform_charge_enabled)
+
+            ? roundMoney(
+                pricing.platform_charge || 0
+            )
+
+            : 0;
+
+
+    // =================================================
+    // FINAL TOTAL
+    // =================================================
+
+    const total = roundMoney(
+        taxable +
+        gst +
+        platform
+    );
+
+
+    return {
+
+        base,
+
+        courseDiscount,
+
+        offerCodeDiscount,
+
+        discount,
+
+        taxable,
+
+        gst,
+
+        platform,
+
+        total,
+
+        currency: "INR"
+    };
+};
+
+
+// =====================================================
 // CREATE COURSE PAYMENT ORDER
 // POST /api/v1/course-payments/orders
 // =====================================================
@@ -31,6 +235,10 @@ export const createCoursePaymentOrder = async (req, res) => {
 
     try {
 
+        // =================================================
+        // COURSE ID
+        // =================================================
+
         const courseId = Number.parseInt(
             req.body.courseId,
             10
@@ -40,6 +248,7 @@ export const createCoursePaymentOrder = async (req, res) => {
             !Number.isInteger(courseId) ||
             courseId < 1
         ) {
+
             return res.status(400).json({
                 success: false,
                 message: "courseId is required"
@@ -47,15 +256,17 @@ export const createCoursePaymentOrder = async (req, res) => {
         }
 
 
-        // =========================================
+        // =================================================
         // GET PUBLISHED COURSE
-        // =========================================
+        // =================================================
 
-        const course = await getPublishedCourseById(
-            courseId
-        );
+        const course =
+            await getPublishedCourseById(
+                courseId
+            );
 
         if (!course) {
+
             return res.status(404).json({
                 success: false,
                 message: "Published course not found"
@@ -63,17 +274,19 @@ export const createCoursePaymentOrder = async (req, res) => {
         }
 
 
-        // =========================================
+        // =================================================
         // CHECK ALREADY PURCHASED
-        // =========================================
+        // =================================================
 
-        const owned = await findOwnedPaidItem(
-            req.user.id,
-            "COURSE",
-            course.id
-        );
+        const owned =
+            await findOwnedPaidItem(
+                req.user.id,
+                "COURSE",
+                course.id
+            );
 
         if (owned) {
+
             return res.status(409).json({
                 success: false,
                 message: "You already own this course",
@@ -82,34 +295,78 @@ export const createCoursePaymentOrder = async (req, res) => {
         }
 
 
-        // =========================================
-        // COURSE PRICE
-        // =========================================
+        // =================================================
+        // OFFER CODE
+        // =================================================
 
-        const amount = Number(course.price);
+        const offerCode =
+            String(
+                req.body.offerCode || ""
+            ).trim() || null;
+
+
+        // =================================================
+        // VALIDATE OFFER CODE
+        // =================================================
+
+        const offer = offerCode
+
+            ? await findOfferByCode({
+                code: offerCode,
+                userId: req.user.id,
+                courseId: course.id,
+
+                subtotal: Number(
+                    course.pricing?.base_price ??
+                    course.price
+                )
+            })
+
+            : null;
+
+
+        // =================================================
+        // CALCULATE FINAL COURSE PRICE
+        // =================================================
+
+        const price =
+            calculateCoursePrice(
+                course,
+                offer
+            );
+
+
+        const amount = price.total;
+
+
+        // =================================================
+        // MINIMUM PAYMENT
+        // =================================================
 
         if (
             !Number.isFinite(amount) ||
             amount < 1
         ) {
+
             return res.status(422).json({
                 success: false,
-                message: "Course price must be at least ₹1"
+                message:
+                    "Course price must be at least ₹1"
             });
         }
 
 
-        // =========================================
+        // =================================================
         // MERCHANT ORDER ID
-        // =========================================
+        // =================================================
 
         merchantOrderId =
             `dns_course_${Date.now()}_${crypto.randomBytes(5).toString("hex")}`;
 
 
-        // =========================================
+        // =================================================
         // CREATE LOCAL ORDER
-        // =========================================
+        // =================================================
 
         await createLocalOrder({
 
@@ -128,25 +385,25 @@ export const createCoursePaymentOrder = async (req, res) => {
                 course.course_name,
 
             baseAmount:
-                amount,
+                price.base,
 
             discountAmount:
-                0,
+                price.discount,
 
             gstAmount:
-                0,
+                price.gst,
 
             platformAmount:
-                0,
+                price.platform,
 
             orderAmount:
-                amount
+                price.total
         });
 
 
-        // =========================================
+        // =================================================
         // CREATE CASHFREE ORDER
-        // =========================================
+        // =================================================
 
         const gatewayOrder =
             await createCashfreeOrder({
@@ -166,9 +423,9 @@ export const createCoursePaymentOrder = async (req, res) => {
             });
 
 
-        // =========================================
+        // =================================================
         // ACTIVATE LOCAL ORDER
-        // =========================================
+        // =================================================
 
         await activateLocalOrder(
             merchantOrderId,
@@ -176,9 +433,9 @@ export const createCoursePaymentOrder = async (req, res) => {
         );
 
 
-        // =========================================
+        // =================================================
         // RESPONSE
-        // =========================================
+        // =================================================
 
         return res.status(201).json({
 
@@ -189,13 +446,17 @@ export const createCoursePaymentOrder = async (req, res) => {
                 orderId:
                     merchantOrderId,
 
-                amount,
+                amount:
+                    price.total,
 
                 currency:
                     "INR",
 
                 courseId:
-                    course.id
+                    course.id,
+
+                priceBreakdown:
+                    price
             },
 
             cashfree: {
@@ -211,14 +472,21 @@ export const createCoursePaymentOrder = async (req, res) => {
 
     } catch (error) {
 
+        // =================================================
+        // FAIL LOCAL ORDER
+        // =================================================
+
         if (merchantOrderId) {
 
             try {
+
                 await failLocalOrder(
                     merchantOrderId,
                     error.message
                 );
+
             } catch (failError) {
+
                 console.error(
                     "Failed to mark course order as failed:",
                     failError
@@ -233,9 +501,16 @@ export const createCoursePaymentOrder = async (req, res) => {
         );
 
 
+        // =================================================
+        // ERROR STATUS
+        // =================================================
+
         const status =
-            error instanceof CashfreeError
+            error instanceof CashfreeError ||
+            error instanceof OfferCodeError
+
                 ? error.status
+
                 : 500;
 
 
@@ -252,6 +527,150 @@ export const createCoursePaymentOrder = async (req, res) => {
 
 
 // =====================================================
+// VALIDATE COURSE OFFER
+// POST /api/v1/course-payments/offers/validate
+// =====================================================
+
+export const validateCourseOffer = async (req, res) => {
+
+    try {
+
+        // =================================================
+        // COURSE ID
+        // =================================================
+
+        const courseId =
+            Number.parseInt(
+                req.body.courseId,
+                10
+            );
+
+
+        // =================================================
+        // OFFER CODE
+        // =================================================
+
+        const offerCode =
+            String(
+                req.body.offerCode || ""
+            ).trim();
+
+
+        if (
+            !Number.isInteger(courseId) ||
+            courseId < 1 ||
+            !offerCode
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "courseId and offerCode are required"
+            });
+        }
+
+
+        // =================================================
+        // GET COURSE
+        // =================================================
+
+        const course =
+            await getPublishedCourseById(
+                courseId
+            );
+
+
+        if (!course) {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Published course not found"
+            });
+        }
+
+
+        // =================================================
+        // VALIDATE OFFER
+        // =================================================
+
+        const offer =
+            await findOfferByCode({
+
+                code:
+                    offerCode,
+
+                userId:
+                    req.user.id,
+
+                courseId:
+                    course.id,
+
+                subtotal:
+                    Number(
+                        course.pricing?.base_price ??
+                        course.price
+                    )
+            });
+
+
+        // =================================================
+        // CALCULATE PRICE
+        // =================================================
+
+        const price =
+            calculateCoursePrice(
+                course,
+                offer
+            );
+
+
+        // =================================================
+        // RESPONSE
+        // =================================================
+
+        return res.json({
+
+            success: true,
+
+            data: {
+
+                offerCode:
+                    offer.code,
+
+                priceBreakdown:
+                    price
+            }
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Course offer validation error:",
+            error
+        );
+
+
+        const status =
+            error instanceof OfferCodeError
+                ? error.status
+                : 500;
+
+
+        return res.status(status).json({
+
+            success: false,
+
+            message:
+                error.message ||
+                "Unable to validate offer"
+        });
+    }
+};
+
+
+// =====================================================
 // VERIFY COURSE PAYMENT
 // GET /api/v1/course-payments/orders/:orderId
 // =====================================================
@@ -260,9 +679,9 @@ export const verifyCoursePayment = async (req, res) => {
 
     try {
 
-        // =========================================
+        // =================================================
         // GET LOCAL ORDER
-        // =========================================
+        // =================================================
 
         let order =
             await getOrderByMerchantId(
@@ -279,9 +698,9 @@ export const verifyCoursePayment = async (req, res) => {
         }
 
 
-        // =========================================
+        // =================================================
         // USER CHECK
-        // =========================================
+        // =================================================
 
         if (
             Number(order.user_id) !==
@@ -290,14 +709,15 @@ export const verifyCoursePayment = async (req, res) => {
 
             return res.status(403).json({
                 success: false,
-                message: "You cannot access this order"
+                message:
+                    "You cannot access this order"
             });
         }
 
 
-        // =========================================
+        // =================================================
         // COURSE ORDER CHECK
-        // =========================================
+        // =================================================
 
         if (
             order.item_type !== "COURSE"
@@ -305,14 +725,15 @@ export const verifyCoursePayment = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "This is not a course order"
+                message:
+                    "This is not a course order"
             });
         }
 
 
-        // =========================================
+        // =================================================
         // VERIFY WITH CASHFREE
-        // =========================================
+        // =================================================
 
         if (
             ["CREATED", "ACTIVE"]
@@ -325,33 +746,33 @@ export const verifyCoursePayment = async (req, res) => {
                 );
 
 
+            // =================================================
+            // AMOUNT CHECK
+            // =================================================
+
             const amountMatches =
                 Number(remote.order_amount) ===
                 Number(order.order_amount);
 
+
+            // =================================================
+            // CURRENCY CHECK
+            // =================================================
 
             const currencyMatches =
                 remote.order_currency ===
                 order.currency;
 
 
-            // =====================================
+            // =================================================
             // PAYMENT SUCCESS
-            // =====================================
+            // =================================================
 
             if (
                 remote.order_status === "PAID" &&
                 amountMatches &&
                 currencyMatches
             ) {
-
-                /*
-                 * IMPORTANT:
-                 *
-                 * markOrderFromGateway()
-                 * will mark payment as PAID
-                 * AND create course enrollment.
-                 */
 
                 await markOrderFromGateway(
                     order.merchant_order_id,
@@ -362,9 +783,9 @@ export const verifyCoursePayment = async (req, res) => {
             }
 
 
-            // =====================================
+            // =================================================
             // PAYMENT EXPIRED / TERMINATED
-            // =====================================
+            // =================================================
 
             else if (
                 ["EXPIRED", "TERMINATED"]
@@ -380,9 +801,9 @@ export const verifyCoursePayment = async (req, res) => {
             }
 
 
-            // =====================================
+            // =================================================
             // RELOAD ORDER
-            // =====================================
+            // =================================================
 
             order =
                 await getOrderByMerchantId(
@@ -391,9 +812,9 @@ export const verifyCoursePayment = async (req, res) => {
         }
 
 
-        // =========================================
+        // =================================================
         // FINAL RESPONSE
-        // =========================================
+        // =================================================
 
         return res.json({
 
