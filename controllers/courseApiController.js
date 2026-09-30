@@ -20,6 +20,58 @@ import {
 const roundMoney = (value) =>
     Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 
+const normalizeImageUrl = (value) => {
+    if (!value) {
+        return null;
+    }
+
+    const raw = String(value).trim();
+
+    if (!raw) {
+        return null;
+    }
+
+    // Full URL
+    if (
+        raw.startsWith("http://") ||
+        raw.startsWith("https://")
+    ) {
+        return raw;
+    }
+
+    // Already backend API path
+    if (raw.startsWith("/backend-api/")) {
+        return raw;
+    }
+
+    // /uploads/... path
+    const uploadsIndex = raw.indexOf("/uploads/");
+
+    if (uploadsIndex >= 0) {
+        return "/backend-api" + raw.slice(uploadsIndex);
+    }
+
+    // Server filesystem path
+    if (
+        raw.startsWith("/home/ubuntu/dns_harsh/public/")
+    ) {
+        return (
+            "/backend-api" +
+            raw.replace(
+                "/home/ubuntu/dns_harsh/public",
+                ""
+            )
+        );
+    }
+
+    // Other absolute paths
+    if (raw.startsWith("/")) {
+        return raw;
+    }
+
+    return raw;
+};
+
 const publicPrice = (course) => {
     const pricing = course.pricing || {};
 
@@ -202,7 +254,7 @@ export const getCourses = async (req, res) => {
                         long: course.long_description
                     },
 
-                    imageUrl: course.cover_image_url,
+                    imageUrl: normalizeImageUrl(course.cover_image_url),
 
                     price: Number(course.price),
 
@@ -302,7 +354,7 @@ export const getCourse = async (req, res) => {
                     long: course.long_description
                 },
 
-                imageUrl: course.cover_image_url,
+                imageUrl: normalizeImageUrl(course.cover_image_url),
                 price: Number(course.price),
                 currency: "INR",
 
@@ -377,7 +429,7 @@ export const getMyCourses = async (req, res) => {
                 slug: course.slug,
                 subject: course.subject_name,
                 shortDescription: course.short_description,
-                imageUrl: course.cover_image_url,
+                imageUrl: normalizeImageUrl(course.cover_image_url),
                 price: Number(course.price),
                 status: course.status,
                 enrollment: {
@@ -447,7 +499,7 @@ export const getMyCourseDetails = async (req, res) => {
                     short: course.short_description,
                     long: course.long_description
                 },
-                imageUrl: course.cover_image_url,
+                imageUrl: normalizeImageUrl(course.cover_image_url),
                 enrollment: {
                     id: enrollment.id,
                     orderId: enrollment.order_id,
